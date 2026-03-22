@@ -33,7 +33,7 @@ def new_analysis():
         return False
 
     print("⚙️  Copiando archivos de evidencia a la VM...")
-    evidence_files = [config.GUEST_PROCMON_LOG, config.GUEST_REGSHOT_HIVE_1, config.GUEST_REGSHOT_HIVE_2]
+    evidence_files = [config.GUEST_PROCMON_LOG]
     for file_path in evidence_files:
         host_file = config.HOST_EVIDENCE_DIR / file_path.split('\\')[-1]
         if host_file.exists():

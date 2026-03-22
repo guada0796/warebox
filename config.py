@@ -9,7 +9,7 @@ PROJECT_NAME = "WAREBOX"
 
 # --- Configuración de la Máquina Virtual ---
 VM_NAME = "W10PRO"
-SNAPSHOT_NAME = "warebox6"
+SNAPSHOT_NAME = "warebox8"
 
 # --- Credenciales del Guest (Windows) ---
 GUEST_USER = "ucjc"
@@ -19,17 +19,13 @@ GUEST_PASS = "ucjc"
 GUEST_TOOLS_DIR = "C:\\Tools"
 GUEST_PAYLOAD_PATH_TEMPLATE = f"{GUEST_TOOLS_DIR}\\{{payload_name}}"
 GUEST_PROCMON_PATH = f"{GUEST_TOOLS_DIR}\\Procmon.exe"
-GUEST_REGSHOT_PATH = f"{GUEST_TOOLS_DIR}\\Regshot64.exe"
 GUEST_POWERSHELL_PATH = f"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
 GUEST_CMD_PATH = f"C:\\Windows\\System32\\cmd.exe"
 GUEST_LOG_DIR = f"C:\\Users\\{GUEST_USER}\\Desktop\\Logs"
 GUEST_PROCMON_LOG = f"{GUEST_LOG_DIR}\\procmon.pml"
-GUEST_REGSHOT_LOG = f"{GUEST_LOG_DIR}\\~res-x64.txt" #También puede ser .html según el output de regshot
-GUEST_REGSHOT_HIVE_1 = f"{GUEST_LOG_DIR}\\snapshot1.hivu"
-GUEST_REGSHOT_HIVE_2 = f"{GUEST_LOG_DIR}\\snapshot2.hivu"
 
 # --- Rutas en el Host (Ubuntu) ---
-HOST_DIR = Path.home() / "warebox"
+HOST_DIR = Path.home() / "warebox-workspace"
 HOST_MALWARE_DIR = HOST_DIR / "Malware_Reports"
 HOST_TEMP_DIR = HOST_DIR / "Malware_Temp"
 HOST_EVIDENCE_DIR = HOST_DIR / "Malware_Evidence"
@@ -46,4 +42,4 @@ WAIT_START_TIME = 20
 # --- Tiempo de espera en segundos para que actúe el malware --
 WAIT_MALWARE_TIME = 10
 # --- Tiempo de espera en segundos para que se escriban los resultados --
-WAIT_WRITE_FILES_TIME = 150
+WAIT_WRITE_FILES_TIME = 10

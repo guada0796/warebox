@@ -1,7 +1,6 @@
 # main.py
 """
-Script final que recolecta los logs en bruto: un log de ProcMon y
-dos snapshots (.hive) de RegShot para comparación manual.
+Script final que recolecta los logs en bruto: un log de ProcMon.
 """
 import time
 import config
@@ -9,7 +8,6 @@ import vbox_manager as vbox
 import file_handler as file
 # --- Importamos los nuevos módulos separados ---
 import procmon_wrapper as procmon
-import regshot_wrapper as regshot
 
 def run_analysis():
     """Ejecuta el flujo completo de análisis de una muestra."""
@@ -25,7 +23,6 @@ def run_analysis():
 
     # --- Iniciar Monitoreo ---
     if not procmon.start_capture(): return
-    if not regshot.take_snapshot_1(): return
 
     # --- Despliegue y Detonación ---
     guest_payload_path = config.GUEST_PAYLOAD_PATH_TEMPLATE.format(payload_name=config.PAYLOAD_EXE_NAME)
@@ -40,17 +37,13 @@ def run_analysis():
 
     # --- Detener Monitoreo ---
     if not procmon.stop_capture(): return
-    if not regshot.take_snapshot_2(): return
     
     print(f"⏱️  Esperando {config.WAIT_WRITE_FILES_TIME} segundos para que los archivos de log se escriban...")
     time.sleep(config.WAIT_WRITE_FILES_TIME)
 
     # --- Recolección de Evidencias en Bruto ---
     if not file.copy_from_guest(config.GUEST_PROCMON_LOG, config.HOST_EVIDENCE_DIR): return
-    if not file.copy_from_guest(config.GUEST_REGSHOT_LOG, config.HOST_EVIDENCE_DIR): return
-    if not file.copy_from_guest(config.GUEST_REGSHOT_HIVE_1, config.HOST_EVIDENCE_DIR): return
-    if not file.copy_from_guest(config.GUEST_REGSHOT_HIVE_2, config.HOST_EVIDENCE_DIR): return
-    
+
     # --- Limpieza Final ---
     vbox.stop_vm()
     print("\n\n🎉 ¡Análisis del malware completado! 🎉")
