@@ -20,9 +20,7 @@ def new_analysis():
     config.clear_screen()
     print("--- Nuevo Análisis Manual ---")
     
-    if not vbox.run_vbox_command(["VBoxManage", "snapshot", config.VM_NAME, "restore", config.SNAPSHOT_NAME], f"Restaurando VM al snapshot '{config.SNAPSHOT_NAME}'"):
-        return
-    if not vbox.start_vm_gui(): return
+    if not vbox.restore_start_vm_gui(config.SNAPSHOT_NAME): return
     
     print("⏱️  Esperando 20 segundos para el arranque completo...")
     time.sleep(20)
@@ -62,9 +60,7 @@ def open_analysis():
     if not snapshot_to_open:
         print("❌ El nombre no puede estar vacío."); time.sleep(2); return
 
-    if not vbox.run_vbox_command(["VBoxManage", "snapshot", config.VM_NAME, "restore", snapshot_to_open], f"Restaurando VM al snapshot '{snapshot_to_open}'"):
-        return
-    if not vbox.start_vm_gui(): return
+    if not vbox.restore_start_vm_gui(config.SNAPSHOT_NAME): return
 
     print("\n✅✅✅ Entorno de análisis restaurado ✅✅✅")
     input("\n--- Presione Enter aquí cuando haya finalizado su análisis en la VM. ---")
