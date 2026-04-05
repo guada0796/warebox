@@ -1,11 +1,10 @@
 # file_handler.py
 """
-Módulo para manejar la descompresión de muestras y la transferencia de archivos.
+Módulo para manejar la descompresión de muestras, transferencia y acciones de archivos en el HOST.
 """
-import subprocess
-import os
-from pathlib import Path
-from utils.config import VM_NAME, GUEST_USER, GUEST_PASS
+import subprocess, os, time, importlib
+#from pathlib import Path
+from utils import config
 from services import vbox_manager as vbox
 
 def decompress_sample_on_host(zip_path, password, extract_dir, payload_name):
@@ -23,7 +22,7 @@ def decompress_sample_on_host(zip_path, password, extract_dir, payload_name):
 
 def copy_to_guest(host_path, guest_path):
     """Copia un archivo desde el host a la VM."""
-    command = ["VBoxManage", "guestcontrol", VM_NAME, "copyto", str(host_path), guest_path, "--username", GUEST_USER, "--password", GUEST_PASS]
+    command = ["VBoxManage", "guestcontrol", config.VM_NAME, "copyto", str(host_path), guest_path, "--username", config.GUEST_USER, "--password", config.GUEST_PASS]
     return vbox.run_vbox_command(command, f"Copiando '{host_path.name}' a la VM")
 
 def remove_from_host(file_path):
@@ -44,9 +43,35 @@ def copy_from_guest(guest_path, host_dir):
     host_destination_path = host_dir / file_name
     
     command = [
-        "VBoxManage", "guestcontrol", VM_NAME, "copyfrom",
+        "VBoxManage", "guestcontrol", config.VM_NAME, "copyfrom",
         guest_path,
         str(host_destination_path), # Usamos la ruta completa y correcta
-        "--username", GUEST_USER, "--password", GUEST_PASS
+        "--username", config.GUEST_USER, "--password", config.GUEST_PASS
     ]
     return vbox.run_vbox_command(command, f"Descargando evidencia '{file_name}'")
+
+def update_config_file(updates):
+    """
+    Lee el archivo config.py, actualiza las claves especificadas y lo reescribe.
+    """
+    config_path = "utils/config.py"
+    lines = []
+    with open(config_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+
+    with open(config_path, 'w', encoding='utf-8') as f:
+        for line in lines:
+            found_key = next((key for key in updates if line.strip().startswith(key)), None)
+            
+            if found_key:
+                new_value = updates[found_key]
+                if isinstance(new_value, str):
+                    f.write(f"{found_key} = \"{new_value}\"\n")
+                else: # Para números
+                    f.write(f"{found_key} = {new_value}\n")
+            else:
+                f.write(line)
+    
+    importlib.reload(config)
+    print("\n✅ ¡Configuración guardada!")
+    time.sleep(1.5)

@@ -3,9 +3,7 @@
 Módulo para gestionar las operaciones de snapshots de la máquina virtual.
 """
 import subprocess
-import time
 from utils import config
-from utils.config import VM_NAME
 from services import vbox_manager as vbox
 
 def create_snapshot():
@@ -15,7 +13,7 @@ def create_snapshot():
         print("❌ El nombre no puede estar vacío.")
         return
     
-    command = ["VBoxManage", "snapshot", VM_NAME, "take", name]
+    command = ["VBoxManage", "snapshot", config.VM_NAME, "take", name]
     if vbox.run_vbox_command(command, f"Creando snapshot '{name}'"):
         print(f"✅ ¡Éxito! Snapshot '{name}' creado.")
 
@@ -26,7 +24,7 @@ def restore_snapshot():
         print("❌ El nombre no puede estar vacío.")
         return
         
-    command = ["VBoxManage", "snapshot", VM_NAME, "restore", name]
+    command = ["VBoxManage", "snapshot", config.VM_NAME, "restore", name]
     if vbox.run_vbox_command(command, f"Restaurando al snapshot '{name}'"):
         print(f"✅ ¡Éxito! VM restaurada al estado de '{name}'.")
 
@@ -42,57 +40,27 @@ def delete_snapshot():
         print("Operación cancelada.")
         return
 
-    command = ["VBoxManage", "snapshot", VM_NAME, "delete", name]
+    command = ["VBoxManage", "snapshot", config.VM_NAME, "delete", name]
     if vbox.run_vbox_command(command, f"Eliminando snapshot '{name}'"):
         print(f"✅ ¡Éxito! Snapshot '{name}' eliminado.")
 
 def list_snapshots():
     """Muestra una lista de todos los snapshots para la VM."""
-    print(f"\n📑 Buscando snapshots para la VM '{VM_NAME}'...")
-    command = ["VBoxManage", "snapshot", VM_NAME, "list"]
-    
+    print(f"\n📑 Buscando snapshots para la VM '{config.VM_NAME}'...")
+
+    command = ["VBoxManage", "snapshot", config.VM_NAME, "list"]
     try:
         result = subprocess.run(command, check=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
+        
         print("--- Snapshots existentes ---")
         if result.stdout:
             print(result.stdout.strip())
         else:
             print("No se encontraron snapshots para esta VM.")
         print("--------------------------")
-            
+
     except subprocess.CalledProcessError as e:
         if "Could not find a snapshot" in e.stderr:
              print("\nNo se encontraron snapshots para esta VM.")
         else:
-            print(f"❌ Error al listar los snapshots: {e.stderr.strip()}")
-
-def show_snapshot_menu():
-    """Muestra el menú de gestión de snapshots."""
-    while True:
-        # --- CORRECCIÓN: Llamamos a la función desde 'config' ---
-        config.clear_screen()
-        print("--- Gestión de Snapshots ---")
-        print(f"VM actual: {VM_NAME}")
-        print("   1. Listar snapshots existentes")
-        print("   2. Crear un snapshot")
-        print("   3. Restaurar un snapshot")
-        print("   4. Eliminar un snapshot")
-        print("   b. Volver al menú principal")
-        
-        choice = input("\nElige una opción: ").lower()
-        
-        if choice == '1':
-            list_snapshots()
-        elif choice == '2':
-            create_snapshot()
-        elif choice == '3':
-            restore_snapshot()
-        elif choice == '4':
-            delete_snapshot()
-        elif choice == 'b':
-            break
-        else:
-            print("❌ Opción no válida. Inténtelo de nuevo.")
-        
-        if choice in ['1', '2', '3', '4']:
-            input("\n--- Presione Enter para continuar ---")
+            print(f"❌ Error al buscar los snapshots: {e.stderr.strip()}")

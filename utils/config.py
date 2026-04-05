@@ -1,6 +1,6 @@
 # config.py
 """
-Archivo de configuración central para el proyecto del sandbox.
+Archivo de configuración central para el proyecto WAREBOX.
 """
 from pathlib import Path
 
@@ -38,7 +38,7 @@ ZIP_FILENAME = "0b1f13853ca89b0f902a13bb80f12c9a97c666b3a8adc8f062f8622e7a63cbd9
 PAYLOAD_EXE_NAME = "0b1f13853ca89b0f902a13bb80f12c9a97c666b3a8adc8f062f8622e7a63cbd9.exe"
 
 # --- Tiempo de espera en segundos para que arranque la VM --
-WAIT_START_TIME = 60
+WAIT_START_TIME = 40
 # --- Tiempo de espera en segundos para que actúe el malware --
 WAIT_MALWARE_TIME = 10
 # --- Tiempo de espera en segundos para que se escriban los resultados --

@@ -52,9 +52,6 @@ def run_powershell_command(command, description):
     full_command = ["VBoxManage", "guestcontrol", VM_NAME, "run", "--username", GUEST_USER, "--password", GUEST_PASS, "--exe", GUEST_POWERSHELL_PATH, "--", "-Command", command]
     return run_vbox_command(full_command, description)
 
-
-# --- Grabación de pantalla nativa de VirtualBox ---
-
 # --- Grabación de pantalla nativa de VirtualBox (VBoxManage 7.2.6) ---
 def _get_recording_filename():
     """Genera el nombre de archivo para la grabación según el formato solicitado."""

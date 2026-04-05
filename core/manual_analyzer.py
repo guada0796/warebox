@@ -4,25 +4,20 @@ Módulo para gestionar el análisis manual de las evidencias recolectadas,
 reutilizando las funciones existentes de snapshot_manager.
 """
 import time
-from datetime import datetime
-from utils import config as config
+from utils import config, cli_utils
 from services import vbox_manager as vbox
 from core import file_handler as file
 from services import snapshot_manager
 
-def get_current_timestamp():
-    """Devuelve la fecha y hora actual en un formato para nombres de archivo."""
-    return datetime.now().strftime("%Y%m%d_%H%M%S")
-
 def new_analysis():
     """Prepara un entorno limpio con las evidencias para un nuevo análisis manual."""
-    config.clear_screen()
+    cli_utils.clear_screen()
     print("--- Nuevo Análisis Manual ---")
     
     if not vbox.restore_start_vm_gui(config.SNAPSHOT_NAME): return
     
     print("⏱️  Esperando 20 segundos para el arranque completo...")
-    time.sleep(20)
+    time.sleep(config.WAIT_START_TIME)
     
     """Prepara el directorio de logs e inicia la captura con ProcMon."""
     mkdir_cmd = f"New-Item -Path '{config.GUEST_LOG_DIR}' -ItemType Directory -Force"
@@ -51,7 +46,7 @@ def new_analysis():
 
 def open_analysis():
     """Restaura un snapshot de un análisis guardado previamente."""
-    config.clear_screen()
+    cli_utils.clear_screen()
     print("--- Abrir Análisis Guardado ---")
     
     snapshot_manager.list_snapshots()
@@ -67,30 +62,9 @@ def open_analysis():
     save = input("\n¿Desea guardar los cambios (actualizar el timestamp del snapshot)? (s/N): ").lower()
     if save == 's':
         base_name = snapshot_to_open.rsplit('_', 1)[0]
-        final_snapshot_name = f"{base_name}_{get_current_timestamp()}"
+        final_snapshot_name = f"{base_name}_{cli_utils.get_current_timestamp()}"
         vbox.run_vbox_command(["VBoxManage", "snapshot", config.VM_NAME, "take", final_snapshot_name], f"Creando snapshot actualizado '{final_snapshot_name}'")
 
     vbox.stop_vm()
     print("\nAnálisis finalizado.")
     time.sleep(2)
-
-def show_analysis_menu():
-    """Muestra el menú principal de análisis manual."""
-    while True:
-        # --- CORRECCIÓN: Llamamos a la función desde 'config' ---
-        config.clear_screen()
-        print("--- Menú de Análisis Manual ---")
-        print("   1. Iniciar un Nuevo Análisis (desde el snapshot base)")
-        print("   2. Abrir un Análisis Guardado (desde un snapshot existente)")
-        print("   b. Volver al menú principal")
-
-        choice = input("\nSeleccione una opción: ").lower()
-
-        if choice == '1':
-            new_analysis()
-        elif choice == '2':
-            open_analysis()
-        elif choice == 'b':
-            break
-        else:
-            print("❌ Opción no válida. Inténtelo de nuevo."); time.sleep(1)
