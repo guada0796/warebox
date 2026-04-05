@@ -4,10 +4,9 @@ Módulo para gestionar las operaciones de snapshots de la máquina virtual.
 """
 import subprocess
 import time
-# --- CORRECCIÓN: Importamos 'config' para acceder a clear_screen ---
-import config
-from config import VM_NAME
-import vbox_manager as vbox
+from utils import config
+from utils.config import VM_NAME
+from services import vbox_manager as vbox
 
 def create_snapshot():
     """Pide un nombre y crea un snapshot."""

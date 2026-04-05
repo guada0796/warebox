@@ -5,11 +5,10 @@ reutilizando las funciones existentes de snapshot_manager.
 """
 import time
 from datetime import datetime
-# --- CORRECCIÓN: Importamos 'config' para acceder a clear_screen ---
-import config
-import vbox_manager as vbox
-import file_handler as file
-import snapshot_manager as snapshot_mgr
+from utils import config as config
+from services import vbox_manager as vbox
+from core import file_handler as file
+from services import snapshot_manager
 
 def get_current_timestamp():
     """Devuelve la fecha y hora actual en un formato para nombres de archivo."""
@@ -44,7 +43,7 @@ def new_analysis():
     
     save = input("\n¿Desea guardar el estado actual de su análisis como un nuevo snapshot? (s/N): ").lower()
     if save == 's':
-        snapshot_mgr.create_snapshot()
+        snapshot_manager.create_snapshot()
     
     vbox.stop_vm()
     print("\nAnálisis finalizado.")
@@ -55,7 +54,7 @@ def open_analysis():
     config.clear_screen()
     print("--- Abrir Análisis Guardado ---")
     
-    snapshot_mgr.list_snapshots()
+    snapshot_manager.list_snapshots()
     snapshot_to_open = input("\nIntroduce el nombre exacto del snapshot de análisis que deseas abrir: ")
     if not snapshot_to_open:
         print("❌ El nombre no puede estar vacío."); time.sleep(2); return

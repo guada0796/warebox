@@ -5,8 +5,8 @@ Módulo para manejar la descompresión de muestras y la transferencia de archivo
 import subprocess
 import os
 from pathlib import Path
-from config import VM_NAME, GUEST_USER, GUEST_PASS
-import vbox_manager as vbox
+from utils.config import VM_NAME, GUEST_USER, GUEST_PASS
+from services import vbox_manager as vbox
 
 def decompress_sample_on_host(zip_path, password, extract_dir, payload_name):
     """Descomprime un archivo .zip en el host usando 7z."""

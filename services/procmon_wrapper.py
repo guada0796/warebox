@@ -2,8 +2,8 @@
 """
 Módulo dedicado a controlar Process Monitor (ProcMon) usando PowerShell.
 """
-from config import GUEST_PROCMON_PATH, GUEST_LOG_DIR, GUEST_PROCMON_LOG
-import vbox_manager as vbox
+from utils.config import GUEST_PROCMON_PATH, GUEST_LOG_DIR, GUEST_PROCMON_LOG
+from services import vbox_manager as vbox
 
 def start_capture():
     """Prepara el directorio de logs e inicia la captura con ProcMon."""

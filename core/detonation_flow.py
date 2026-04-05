@@ -3,11 +3,10 @@
 Script final que recolecta los logs en bruto: un log de ProcMon.
 """
 import time
-import config
-import vbox_manager as vbox
-import file_handler as file
-# --- Importamos los nuevos módulos separados ---
-import procmon_wrapper as procmon
+from utils import config
+from services import vbox_manager as vbox
+from services import procmon_wrapper as procmon
+from core import file_handler as file
 
 def run_analysis():
     """Ejecuta el flujo completo de análisis de una muestra."""

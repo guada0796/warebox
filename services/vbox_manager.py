@@ -3,7 +3,7 @@
 Módulo para gestionar las operaciones de la máquina virtual con VBoxManage.
 """
 import subprocess
-from config import VM_NAME, GUEST_USER, GUEST_PASS, GUEST_CMD_PATH, GUEST_POWERSHELL_PATH, HOST_EVIDENCE_DIR, SNAPSHOT_NAME
+from utils.config import VM_NAME, GUEST_USER, GUEST_PASS, GUEST_CMD_PATH, GUEST_POWERSHELL_PATH, HOST_EVIDENCE_DIR, SNAPSHOT_NAME
 from datetime import datetime
 
 def run_vbox_command(command, description):

@@ -1,4 +1,4 @@
-# menu_principal.py
+# warebox.py
 """
 Interfaz de usuario en consola para gestionar y ejecutar el sandbox de análisis.
 """
@@ -6,10 +6,10 @@ import time
 import importlib
 import os
 
-import config
-import main as sandbox_main
-import snapshot_manager 
-import manual_analyzer # Importamos el nuevo módulo
+from utils import config
+from core import detonation_flow as sandbox_main
+from services import snapshot_manager
+from core import manual_analyzer
 
 def clear_screen():
     """Limpia la pantalla de la consola."""
@@ -22,7 +22,7 @@ def update_config_file(updates):
     """
     Lee el archivo config.py, actualiza las claves especificadas y lo reescribe.
     """
-    config_path = "config.py"
+    config_path = "utils/config.py"
     lines = []
     with open(config_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()

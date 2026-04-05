@@ -9,7 +9,7 @@ PROJECT_NAME = "WAREBOX"
 
 # --- Configuración de la Máquina Virtual ---
 VM_NAME = "W10PRO"
-SNAPSHOT_NAME = "warebox8"
+SNAPSHOT_NAME = "warebox-v10"
 
 # --- Credenciales del Guest (Windows) ---
 GUEST_USER = "ucjc"
