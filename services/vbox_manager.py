@@ -17,30 +17,30 @@ def run_vbox_command(command, description):
         print(f"❌ ERROR: {e.stderr.strip()}")
         return False
 
-def start_vm(snapshot_name):
+def start_vm(vm_name, snapshot_name):
     """Restaura a un snapshot y enciende la VM en modo headless."""
-    if not run_vbox_command(["VBoxManage", "snapshot", VM_NAME, "restore", snapshot_name], f"Restaurando VM a '{snapshot_name}'"):
+    if not run_vbox_command(["VBoxManage", "snapshot", vm_name, "restore", snapshot_name], f"Restaurando VM a '{snapshot_name}'"):
         return False
-    if not run_vbox_command(["VBoxManage", "startvm", VM_NAME, "--type", "headless"], "Iniciando VM"):
+    if not run_vbox_command(["VBoxManage", "startvm", vm_name, "--type", "headless"], "Iniciando VM"):
         return False
     return True
 
-def restore_start_vm_gui(snapshot_name):
-    """Restaura a un snapshot y enciende la VM en modo headless."""
-    if not run_vbox_command(["VBoxManage", "snapshot", VM_NAME, "restore", snapshot_name], f"Restaurando VM a '{snapshot_name}'"):
+def restore_start_vm_gui(vm_name, snapshot_name):
+    """Restaura a un snapshot y enciende la VM en normal."""
+    if not run_vbox_command(["VBoxManage", "snapshot", vm_name, "restore", snapshot_name], f"Restaurando VM a '{snapshot_name}'"):
         return False
-    if not run_vbox_command(["VBoxManage", "startvm", VM_NAME], "Iniciando VM en modo gráfico"):
+    if not run_vbox_command(["VBoxManage", "startvm", vm_name], "Iniciando VM en modo gráfico"):
         return False
     return True
 
-def start_vm_gui():
+def start_vm_gui(vm_name):
     """Inicia la VM en modo normal (con interfaz gráfica)."""
-    command = ["VBoxManage", "startvm", VM_NAME]
+    command = ["VBoxManage", "startvm", vm_name]
     return run_vbox_command(command, "Iniciando VM en modo gráfico")
 
-def stop_vm():
+def stop_vm(vm_name):
     """Apaga la máquina virtual."""
-    return run_vbox_command(["VBoxManage", "controlvm", VM_NAME, "poweroff"], "Apagando la VM")
+    return run_vbox_command(["VBoxManage", "controlvm", vm_name, "poweroff"], "Apagando la VM")
 
 def run_command_in_guest(command, description):
     """Ejecuta un comando dentro de la VM invitada usando cmd.exe."""
@@ -59,20 +59,20 @@ def _get_recording_filename():
     filename = f"{VM_NAME}-{SNAPSHOT_NAME}-{timestamp}.webm"
     return HOST_EVIDENCE_DIR / filename
 
-def start_vm_recording():
+def start_vm_recording(vm_name):
     """Configura y activa la grabación de pantalla de la VM (debe llamarse cuando la VM ya está corriendo)."""
     output_path = _get_recording_filename()
     HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
     # 1. Configurar el nombre del archivo
-    cmd_filename = ["VBoxManage", "controlvm", VM_NAME, "recording", "filename", str(output_path)]
+    cmd_filename = ["VBoxManage", "controlvm", vm_name, "recording", "filename", str(output_path)]
     if not run_vbox_command(cmd_filename, f"Configurando archivo de grabación: {output_path}"):
         return False
     # 2. (Opcional) Configurar otras opciones aquí si se desea (resolución, fps, etc)
     # 3. Activar la grabación
-    cmd_on = ["VBoxManage", "controlvm", VM_NAME, "recording", "start"]
+    cmd_on = ["VBoxManage", "controlvm", vm_name, "recording", "start"]
     return run_vbox_command(cmd_on, "Iniciando grabación de pantalla de la VM")
 
-def stop_vm_recording():
+def stop_vm_recording(vm_name):
     """Detiene la grabación de pantalla de la VM con VBoxManage."""
-    cmd_off = ["VBoxManage", "controlvm", VM_NAME, "recording", "stop"]
+    cmd_off = ["VBoxManage", "controlvm", vm_name, "recording", "stop"]
     return run_vbox_command(cmd_off, "Deteniendo grabación de pantalla de la VM")

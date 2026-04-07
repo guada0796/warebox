@@ -7,9 +7,11 @@ from pathlib import Path
 # --- Nombre del Aplicativo ---
 PROJECT_NAME = "WAREBOX"
 
-# --- Configuración de la Máquina Virtual ---
+# --- Configuración de las Máquinas Virtuales ---
 VM_NAME = "W10PRO"
 SNAPSHOT_NAME = "warebox-v10"
+NETWORK_VM_NAME = "DebiaNet"
+NETWORK_SNAPSHOT_NAME = "fake-network-running"
 
 # --- Credenciales del Guest (Windows) ---
 GUEST_USER = "ucjc"
