@@ -63,7 +63,14 @@ def run_analysis():
     time.sleep(config.WAIT_WRITE_FILES_TIME)
 
     # --- Recolección de Evidencias en Bruto ---
-    if not file.copy_from_guest(config.GUEST_PROCMON_LOG, config.HOST_EVIDENCE_DIR):
+    # --- PROCMON LOG ---
+    if not file.copy_from_guest(config.VM_NAME, config.GUEST_USER, config.GUEST_PASS, config.GUEST_PROCMON_LOG, config.HOST_EVIDENCE_DIR):
+        vbox.stop_vm_recording(config.VM_NAME)
+        stop_sandbox()
+        return
+    
+    # --- TCPDUMP LOG ---
+    if not file.copy_from_guest(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS, config.NETWORK_TCPDUMP_LOG, config.HOST_EVIDENCE_DIR):
         vbox.stop_vm_recording(config.VM_NAME)
         stop_sandbox()
         return
@@ -73,7 +80,7 @@ def run_analysis():
     # --- Limpieza Final ---
     stop_sandbox()
     print("\n\n🎉 ¡Análisis del malware completado! 🎉")
-    print(f"Los archivos de evidencia (.pml, .hivu y .txt) se encuentran en: {config.HOST_EVIDENCE_DIR}")
+    print(f"Los archivos de evidencia se encuentran en: {config.HOST_EVIDENCE_DIR}")
 
 def stop_sandbox():
     """ Función que detiene todas las máquinas virtuales"""

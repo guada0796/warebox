@@ -2,8 +2,8 @@
 """
 Módulo para manejar la descompresión de muestras, transferencia y acciones de archivos en el HOST.
 """
+from pathlib import Path
 import subprocess, os, time, importlib
-#from pathlib import Path
 from utils import config
 from services import vbox_manager as vbox
 
@@ -35,18 +35,20 @@ def remove_from_host(file_path):
         print(f"❌ ERROR al borrar el archivo del host: {e}")
 
 # --- CORRECCIÓN DEFINITIVA APLICADA AQUÍ ---
-def copy_from_guest(guest_path, host_dir):
+def copy_from_guest(vm_name, vm_guest_user, vm_guest_pass, guest_path, host_dir):
     """Copia un archivo desde la VM al host, especificando la ruta completa de destino."""
-    # Extraemos solo el nombre del archivo de la ruta del guest.
-    file_name = guest_path.split('\\')[-1]
-    # Construimos la ruta de destino completa en el host.
-    host_destination_path = host_dir / file_name
+    
+    # Normalizamos la ruta: reemplazamos las '\' de Windows por '/' para hacer el split de forma segura en ambos OS
+    file_name = guest_path.replace('\\', '/').split('/')[-1]
+    
+    # Construimos la ruta de destino completa en el host
+    host_destination_path = Path(host_dir) / file_name
     
     command = [
-        "VBoxManage", "guestcontrol", config.VM_NAME, "copyfrom",
+        "VBoxManage", "guestcontrol", vm_name, "copyfrom",
         guest_path,
         str(host_destination_path), # Usamos la ruta completa y correcta
-        "--username", config.GUEST_USER, "--password", config.GUEST_PASS
+        "--username", vm_guest_user, "--password", vm_guest_pass
     ]
     return vbox.run_vbox_command(command, f"Descargando evidencia '{file_name}'")
 

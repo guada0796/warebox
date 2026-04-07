@@ -11,11 +11,15 @@ PROJECT_NAME = "WAREBOX"
 VM_NAME = "W10PRO"
 SNAPSHOT_NAME = "warebox-v10"
 NETWORK_VM_NAME = "DebiaNet"
-NETWORK_SNAPSHOT_NAME = "fake-network-running"
+NETWORK_SNAPSHOT_NAME = "tcp-dump-v2"
 
 # --- Credenciales del Guest (Windows) ---
 GUEST_USER = "ucjc"
 GUEST_PASS = "ucjc"
+
+# --- Credenciales del Guest (Debian) ---
+NETWORK_GUEST_USER = "ucjc"
+NETWORK_GUEST_PASS = "ucjc"
 
 # --- Rutas de Herramientas en el Guest ---
 GUEST_TOOLS_DIR = "C:\\Tools"
@@ -25,6 +29,9 @@ GUEST_POWERSHELL_PATH = f"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powers
 GUEST_CMD_PATH = f"C:\\Windows\\System32\\cmd.exe"
 GUEST_LOG_DIR = f"C:\\Users\\{GUEST_USER}\\Desktop\\Logs"
 GUEST_PROCMON_LOG = f"{GUEST_LOG_DIR}\\procmon.pml"
+
+# --- Rutas de Herramientas en la red Debian ---
+NETWORK_TCPDUMP_LOG = "/home/ucjc/warebox-capture.pcap"
 
 # --- Rutas en el Host (Ubuntu) ---
 HOST_DIR = Path.home() / "warebox-workspace"
@@ -45,3 +52,5 @@ WAIT_START_TIME = 40
 WAIT_MALWARE_TIME = 10
 # --- Tiempo de espera en segundos para que se escriban los resultados --
 WAIT_WRITE_FILES_TIME = 10
+
+#sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap
