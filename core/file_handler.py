@@ -4,20 +4,20 @@ Módulo para manejar la descompresión de muestras, transferencia y acciones de 
 """
 from pathlib import Path
 import subprocess, os, time, importlib
-from utils import config
+from utils import config, messages as msg
 from services import vbox_manager as vbox
 
 def decompress_sample_on_host(zip_path, password, extract_dir, payload_name):
     """Descomprime un archivo .zip en el host usando 7z."""
-    print(f"⚙️  Descomprimiendo '{zip_path.name}' en el host con '7z'...")
+    msg.processing(f"Descomprimiendo '{zip_path.name}' en el host con '7z'")
     extract_dir.mkdir(exist_ok=True)
     command = ["7z", "x", f"-p{password}", f"-o{str(extract_dir)}", str(zip_path), payload_name, "-y"]
     try:
         subprocess.run(command, check=True, capture_output=True, text=True)
-        print("✅ ¡Éxito!")
+        msg.done("Descompresión completada")
         return extract_dir / payload_name
     except Exception as e:
-        print(f"❌ ERROR al descomprimir en el host: {e}")
+        msg.error(f"Error al descomprimir en el host: {e}")
         return None
 
 def copy_to_guest(host_path, guest_path):
@@ -27,12 +27,12 @@ def copy_to_guest(host_path, guest_path):
 
 def remove_from_host(file_path):
     """Borra un archivo del host."""
-    print(f"⚙️  Borrando archivo temporal '{file_path.name}' del host...")
+    msg.cleaning(f"Borrando archivo temporal '{file_path.name}' del host")
     try:
         os.remove(file_path)
-        print("✅ ¡Éxito!")
+        msg.done("Archivo borrado del host")
     except OSError as e:
-        print(f"❌ ERROR al borrar el archivo del host: {e}")
+        msg.error(f"Error al borrar el archivo del host: {e}")
 
 # --- CORRECCIÓN DEFINITIVA APLICADA AQUÍ ---
 def copy_from_guest(vm_name, vm_guest_user, vm_guest_pass, guest_path, host_dir):
@@ -75,5 +75,5 @@ def update_config_file(updates):
                 f.write(line)
     
     importlib.reload(config)
-    print("\n✅ ¡Configuración guardada!")
+    msg.done("Archivo de configuración actualizado")
     time.sleep(1.5)

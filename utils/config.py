@@ -11,7 +11,7 @@ PROJECT_NAME = "WAREBOX"
 VM_NAME = "W10PRO"
 SNAPSHOT_NAME = "warebox-v10"
 NETWORK_VM_NAME = "DebiaNet"
-NETWORK_SNAPSHOT_NAME = "tcp-dump-v2"
+NETWORK_SNAPSHOT_NAME = "fake-network-v3"
 
 # --- Credenciales del Guest (Windows) ---
 GUEST_USER = "ucjc"

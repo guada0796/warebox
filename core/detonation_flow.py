@@ -3,10 +3,10 @@
 Script final que recolecta los logs en bruto: un log de ProcMon.
 """
 import time
-from utils import config
-from services import vbox_manager as vbox
-from services import procmon_wrapper as procmon
+from utils import config, messages as msg
+from services import vbox_manager as vbox, procmon_wrapper as procmon
 from core import file_handler as file
+from services import tcpdum_wrapper as tcpw
 
 def run_analysis():
     """Ejecuta el flujo completo de análisis de una muestra."""
@@ -14,32 +14,73 @@ def run_analysis():
     #Crea el directorio de evidencia si no existe
     config.HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
 
+    payload_path = decompress_malware()
+
+    start_vms()
+
+    start_tcpdump()
+
+    start_procmon()
+
+    start_recording()
+
+    detonation(payload_path)
+
+    stop_recording()
+
+    stop_procmon()
+
+    copy_procmon_log()
+
+    stop_tcpdump()
+
+    copy_tcpdump_log()
+    
+    stop_sandbox()
+    msg.finishing("¡Análisis del malware completado!")
+    msg.info(f"Los archivos de evidencia se encuentran en: {config.HOST_EVIDENCE_DIR}")
+
+def decompress_malware():
     #Descomprime la muestra en el host para luego copiarla a la VM
+    msg.decompressing("Descomprimiendo la muestra")
     zip_path = config.HOST_MALWARE_DIR / config.ZIP_FILENAME
     payload_path = file.decompress_sample_on_host(zip_path, config.COMPRESS_KEY, config.HOST_TEMP_DIR, config.PAYLOAD_EXE_NAME)
     if not payload_path: return
 
-    #Arrancar la VM de DEBIAN
-    if not vbox.start_vm(config.NETWORK_VM_NAME, config.NETWORK_SNAPSHOT_NAME): return
-    print(f"⏱️  Se ha iniciado la máquina virtual de red...")
+    return payload_path
 
-    #Restaua el snapshot y arranca la VM WINDOWS
+def start_vms():
+    """ Función que arranca las máquinas virtuales necesarias"""
+    #Arrancar la VM de DEBIAN
+    if not vbox.restore_start_vm(config.NETWORK_VM_NAME, config.NETWORK_SNAPSHOT_NAME): return
+    msg.starting(f"Se ha iniciado la máquina virtual de red")
+
+    #Restaura el snapshot y arranca la VM WINDOWS
     if not vbox.restore_start_vm_gui(config.VM_NAME, config.SNAPSHOT_NAME): return
-    print(f"⏱️  Esperando {config.WAIT_START_TIME} segundos para el arranque completo...")
+    msg.starting(f"Se ha iniciado la máquina sandbox principal")
+    msg.waiting(f"Esperando {config.WAIT_START_TIME} segundos para el arranque completo")
     time.sleep(config.WAIT_START_TIME)
 
+def start_tcpdump():
+    tcpw.start_tcpdump(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS, 10000)
+    msg.done("Se ha iniciado la captura de paquetes TCPDUMP.")
+
+def start_recording():
     # Iniciar grabación de pantalla (la VM ya debe estar corriendo)
+    msg.recording("Iniciando grabación de pantalla de la VM")
     if not vbox.start_vm_recording(config.VM_NAME):
         stop_sandbox()
         return
 
-    # --- Iniciar Monitoreo ---
+def start_procmon():
+    # Iniciar Monitoreo
     if not procmon.start_capture():
         vbox.stop_vm_recording(config.VM_NAME)
         stop_sandbox()
         return
-
-    # --- Despliegue y Detonación ---
+    
+def detonation(payload_path):
+    # Despliegue y Detonación
     guest_payload_path = config.GUEST_PAYLOAD_PATH_TEMPLATE.format(payload_name=config.PAYLOAD_EXE_NAME)
     if not file.copy_to_guest(payload_path, guest_payload_path):
         vbox.stop_vm_recording(config.VM_NAME)
@@ -48,39 +89,39 @@ def run_analysis():
     file.remove_from_host(payload_path)
 
     if not vbox.run_command_in_guest(guest_payload_path, f"Detonando payload '{config.PAYLOAD_EXE_NAME}'"):
-        print("⚠️  La detonación del payload podría haber fallado, se procederá a recolectar los logs.")
+        msg.warning("La detonación del payload podría haber fallado, se procederá a recolectar los logs")
 
-    print(f"⏳ Esperando {config.WAIT_MALWARE_TIME} segundos para que el malware actúe...")
+    msg.waiting(f"Esperando {config.WAIT_MALWARE_TIME} segundos para que el malware actúe")
     time.sleep(config.WAIT_MALWARE_TIME)
 
-    # --- Detener Monitoreo ---
+def stop_procmon():
+    # Detener Monitoreo
     if not procmon.stop_capture():
-        vbox.stop_vm_recording(config.VM_NAME)
         stop_sandbox()
         return
 
-    print(f"⏱️  Esperando {config.WAIT_WRITE_FILES_TIME} segundos para que los archivos de log se escriban...")
+    msg.waiting(f"Esperando {config.WAIT_WRITE_FILES_TIME} segundos para que los archivos de log se escriban")
     time.sleep(config.WAIT_WRITE_FILES_TIME)
 
-    # --- Recolección de Evidencias en Bruto ---
-    # --- PROCMON LOG ---
+def copy_procmon_log():
     if not file.copy_from_guest(config.VM_NAME, config.GUEST_USER, config.GUEST_PASS, config.GUEST_PROCMON_LOG, config.HOST_EVIDENCE_DIR):
-        vbox.stop_vm_recording(config.VM_NAME)
         stop_sandbox()
         return
-    
-    # --- TCPDUMP LOG ---
+
+def stop_tcpdump():
+    if not tcpw.stop_tcpdump(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS):
+        stop_sandbox()
+        return
+    msg.done("Se ha detenido la captura de paquetes TCPDUMP.")
+
+def copy_tcpdump_log():
     if not file.copy_from_guest(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS, config.NETWORK_TCPDUMP_LOG, config.HOST_EVIDENCE_DIR):
-        vbox.stop_vm_recording(config.VM_NAME)
         stop_sandbox()
         return
 
+def stop_recording():
+    msg.recording("Deteniendo grabación de pantalla de la VM")
     vbox.stop_vm_recording(config.VM_NAME)
-
-    # --- Limpieza Final ---
-    stop_sandbox()
-    print("\n\n🎉 ¡Análisis del malware completado! 🎉")
-    print(f"Los archivos de evidencia se encuentran en: {config.HOST_EVIDENCE_DIR}")
 
 def stop_sandbox():
     """ Función que detiene todas las máquinas virtuales"""

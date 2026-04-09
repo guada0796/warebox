@@ -2,7 +2,7 @@
 Menu que permite la gestión de los snapshots de la máquina virtual.
 """
 
-from utils import config, cli_utils
+from utils import config, cli_utils, messages as msg
 from services import snapshot_manager as sm
 
 def show_snapshot_menu():
@@ -10,7 +10,7 @@ def show_snapshot_menu():
     while True:
         # --- CORRECCIÓN: Llamamos a la función desde 'config' ---
         cli_utils.clear_screen()
-        print("--- Gestión de Snapshots ---")
+        msg.title("Gestión de Snapshots")
         print(f"VM actual: {config.VM_NAME}")
         print("   1. Listar snapshots existentes")
         print("   2. Crear un snapshot")

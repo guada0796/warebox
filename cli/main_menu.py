@@ -7,6 +7,7 @@ import time
 from . import change_configuration_menu as ccm
 from . import analisys_menu as am
 from . import snapshot_menu as sm
+from utils import messages as msg
 
 from utils import cli_utils, config
 from core import detonation_flow
@@ -15,8 +16,7 @@ def show_main_menu():
     """Muestra el menú principal y maneja las opciones del usuario."""
     while True:
         cli_utils.clear_screen()
-        print(f"--- Panel de Control {config.PROJECT_NAME} ---")
-        
+        msg.title(f"Panel de Control {config.PROJECT_NAME}")
         # --- Parámetros Editables ---
         print("\n📋 Configuración Modificable:")
         print(f"   0. Nombre del snapshot:  {config.SNAPSHOT_NAME}")
@@ -47,10 +47,13 @@ def show_main_menu():
         choice = input("\nSeleccione una opción: ").lower()
 
         if choice == 'd':
-            print("\n🚀 Iniciando detonación automática...")
+            msg.line_break()
+            msg.starting("Iniciando proceso de detonación automática")
             time.sleep(1)
             detonation_flow.run_analysis()
-            input("\n--- Análisis finalizado. Presione Enter para volver al menú. ---")
+            msg.line_break()
+            msg.done("Proceso de detonación automática finalizado")
+            msg.separation_line()
         
         elif choice == 'a':
             am.show_analysis_menu()
@@ -62,8 +65,8 @@ def show_main_menu():
             sm.show_snapshot_menu()
 
         elif choice == 's':
-            print("Saliendo...")
+            msg.cleaning("Saliendo")
             break
         else:
-            print("❌ Opción no válida. Inténtelo de nuevo.")
+            msg.error("Opción no válida. Inténtelo de nuevo")
             time.sleep(1)

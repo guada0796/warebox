@@ -5,19 +5,21 @@ Módulo para gestionar las operaciones de la máquina virtual con VBoxManage.
 import subprocess
 from utils.config import VM_NAME, GUEST_USER, GUEST_PASS, GUEST_CMD_PATH, GUEST_POWERSHELL_PATH, HOST_EVIDENCE_DIR, SNAPSHOT_NAME
 from datetime import datetime
+from utils import messages as msg
 
 def run_vbox_command(command, description):
     """Función genérica para ejecutar comandos de VBoxManage."""
-    print(f"⚙️  {description}...")
+    msg.processing(f"{description}")
     try:
         subprocess.run(command, check=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
-        print("✅ ¡Éxito!")
+        msg.info(f"Comando '{description}' completado")
+
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ ERROR: {e.stderr.strip()}")
+        msg.error(f"Error al ejecutar '{description}': {e.stderr.strip()}")
         return False
 
-def start_vm(vm_name, snapshot_name):
+def restore_start_vm(vm_name, snapshot_name):
     """Restaura a un snapshot y enciende la VM en modo headless."""
     if not run_vbox_command(["VBoxManage", "snapshot", vm_name, "restore", snapshot_name], f"Restaurando VM a '{snapshot_name}'"):
         return False
@@ -70,9 +72,9 @@ def start_vm_recording(vm_name):
     # 2. (Opcional) Configurar otras opciones aquí si se desea (resolución, fps, etc)
     # 3. Activar la grabación
     cmd_on = ["VBoxManage", "controlvm", vm_name, "recording", "start"]
-    return run_vbox_command(cmd_on, "Iniciando grabación de pantalla de la VM")
+    return run_vbox_command(cmd_on, "Grabacion ON")
 
 def stop_vm_recording(vm_name):
     """Detiene la grabación de pantalla de la VM con VBoxManage."""
     cmd_off = ["VBoxManage", "controlvm", vm_name, "recording", "stop"]
-    return run_vbox_command(cmd_off, "Deteniendo grabación de pantalla de la VM")
+    return run_vbox_command(cmd_off, "Grabacion OFF")

@@ -6,14 +6,14 @@ Menu para cambiar la configuración del entorno de detonación.
 
 import time
 
-from utils import cli_utils, config
+from utils import cli_utils, config, messages as msg
 from core import file_handler
 
 def change_configuration_menu():
     """Muestra el submenú para cambiar la configuración."""
     while True:
         cli_utils.clear_screen()
-        print("--- Modificar Configuración ---")
+        msg.title("Modificar Configuración")
         # Mostramos los parámetros para facilitar la elección
         print(f"   0. Nombre del snapshot:  {config.SNAPSHOT_NAME}")
         print(f"   1. Nombre de la VM:      {config.VM_NAME}")
