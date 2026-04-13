@@ -4,7 +4,7 @@ Script final que recolecta los logs en bruto: un log de ProcMon.
 """
 import time
 from utils import config, messages as msg
-from services import vbox_manager as vbox, procmon_wrapper as procmon
+from services import vbox_manager as vbox, procmon_wrapper as procmon, sysmon_wrapper as sysmon
 from core import file_handler as file
 from services import tcpdum_wrapper as tcpw
 
@@ -31,6 +31,8 @@ def run_analysis():
     stop_procmon()
 
     copy_procmon_log()
+
+    copy_sysmon_log()
 
     stop_tcpdump()
 
@@ -107,6 +109,11 @@ def copy_procmon_log():
     if not file.copy_from_guest(config.VM_NAME, config.GUEST_USER, config.GUEST_PASS, config.GUEST_PROCMON_LOG, config.HOST_EVIDENCE_DIR):
         stop_sandbox()
         return
+
+def copy_sysmon_log():
+    evtx_path = sysmon.extract_logs(sample_name="warebox_test")
+    if evtx_path:
+        msg.info(f"Descargando evidencia de Sysmon en {evtx_path}")
 
 def stop_tcpdump():
     if not tcpw.stop_tcpdump(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS):

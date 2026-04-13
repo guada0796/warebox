@@ -9,7 +9,7 @@ PROJECT_NAME = "WAREBOX"
 
 # --- Configuración de las Máquinas Virtuales ---
 VM_NAME = "W10PRO"
-SNAPSHOT_NAME = "warebox-v10"
+SNAPSHOT_NAME = "warebox-v11"
 NETWORK_VM_NAME = "DebiaNet"
 NETWORK_SNAPSHOT_NAME = "fake-network-v3"
 
@@ -29,6 +29,7 @@ GUEST_POWERSHELL_PATH = f"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powers
 GUEST_CMD_PATH = f"C:\\Windows\\System32\\cmd.exe"
 GUEST_LOG_DIR = f"C:\\Users\\{GUEST_USER}\\Desktop\\Logs"
 GUEST_PROCMON_LOG = f"{GUEST_LOG_DIR}\\procmon.pml"
+GUEST_SYSMON_LOG = f"{GUEST_LOG_DIR}\\sysmon_export.evtx"
 
 # --- Rutas de Herramientas en la red Debian ---
 NETWORK_TCPDUMP_LOG = "/home/ucjc/warebox-capture.pcap"
