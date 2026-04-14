@@ -111,9 +111,9 @@ def copy_procmon_log():
         return
 
 def copy_sysmon_log():
-    evtx_path = sysmon.extract_logs(sample_name="warebox_test")
-    if evtx_path:
-        msg.info(f"Descargando evidencia de Sysmon en {evtx_path}")
+    if not sysmon.copy_from_guest(config.VM_NAME, config.GUEST_USER, config.GUEST_PASS):
+        stop_sandbox()
+        return
 
 def stop_tcpdump():
     if not tcpw.stop_tcpdump(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS):

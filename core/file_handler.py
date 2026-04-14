@@ -4,7 +4,7 @@ Módulo para manejar la descompresión de muestras, transferencia y acciones de 
 """
 from pathlib import Path
 import subprocess, os, time, importlib
-from utils import config, messages as msg
+from utils import config, messages as msg, cli_utils as cli
 from services import vbox_manager as vbox
 
 def decompress_sample_on_host(zip_path, password, extract_dir, payload_name):
@@ -40,6 +40,7 @@ def copy_from_guest(vm_name, vm_guest_user, vm_guest_pass, guest_path, host_dir)
     
     # Normalizamos la ruta: reemplazamos las '\' de Windows por '/' para hacer el split de forma segura en ambos OS
     file_name = guest_path.replace('\\', '/').split('/')[-1]
+    file_name = file_name.replace("$fch$", cli.get_current_timestamp())
     
     # Construimos la ruta de destino completa en el host
     host_destination_path = Path(host_dir) / file_name
@@ -50,7 +51,7 @@ def copy_from_guest(vm_name, vm_guest_user, vm_guest_pass, guest_path, host_dir)
         str(host_destination_path), # Usamos la ruta completa y correcta
         "--username", vm_guest_user, "--password", vm_guest_pass
     ]
-    return vbox.run_vbox_command(command, f"Descargando evidencia '{file_name}'")
+    return vbox.run_vbox_command(command, f"Descargando evidencia <{file_name}>")
 
 def update_config_file(updates):
     """

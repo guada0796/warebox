@@ -12,37 +12,37 @@ def run_vbox_command(command, description):
     msg.processing(f"{description}")
     try:
         subprocess.run(command, check=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
-        msg.info(f"Comando '{description}' completado")
+        msg.info(f"Comando <{description}> completado")
 
         return True
     except subprocess.CalledProcessError as e:
-        msg.error(f"Error al ejecutar '{description}': {e.stderr.strip()}")
+        msg.error(f"Error al ejecutar <{description}>: {e.stderr.strip()}")
         return False
 
 def restore_start_vm(vm_name, snapshot_name):
     """Restaura a un snapshot y enciende la VM en modo headless."""
-    if not run_vbox_command(["VBoxManage", "snapshot", vm_name, "restore", snapshot_name], f"Restaurando VM a '{snapshot_name}'"):
+    if not run_vbox_command(["VBoxManage", "snapshot", vm_name, "restore", snapshot_name], f"Restaurando <{vm_name}> a <{snapshot_name}>"):
         return False
-    if not run_vbox_command(["VBoxManage", "startvm", vm_name, "--type", "headless"], "Iniciando VM"):
+    if not run_vbox_command(["VBoxManage", "startvm", vm_name, "--type", "headless"], f"Iniciando <{vm_name}>"):
         return False
     return True
 
 def restore_start_vm_gui(vm_name, snapshot_name):
     """Restaura a un snapshot y enciende la VM en normal."""
-    if not run_vbox_command(["VBoxManage", "snapshot", vm_name, "restore", snapshot_name], f"Restaurando VM a '{snapshot_name}'"):
+    if not run_vbox_command(["VBoxManage", "snapshot", vm_name, "restore", snapshot_name], f"Restaurando <{vm_name}> a <{snapshot_name}>"):
         return False
-    if not run_vbox_command(["VBoxManage", "startvm", vm_name], "Iniciando VM en modo gráfico"):
+    if not run_vbox_command(["VBoxManage", "startvm", vm_name], f"Iniciando <{vm_name}> en modo gráfico"):
         return False
     return True
 
 def start_vm_gui(vm_name):
     """Inicia la VM en modo normal (con interfaz gráfica)."""
     command = ["VBoxManage", "startvm", vm_name]
-    return run_vbox_command(command, "Iniciando VM en modo gráfico")
+    return run_vbox_command(command, f"Iniciando <{vm_name}> en modo gráfico")
 
 def stop_vm(vm_name):
     """Apaga la máquina virtual."""
-    return run_vbox_command(["VBoxManage", "controlvm", vm_name, "poweroff"], "Apagando la VM")
+    return run_vbox_command(["VBoxManage", "controlvm", vm_name, "poweroff"], f"Apagando <{vm_name}>")
 
 def run_command_in_guest(command, description):
     """Ejecuta un comando dentro de la VM invitada usando cmd.exe."""
