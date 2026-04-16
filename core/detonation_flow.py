@@ -111,15 +111,10 @@ def copy_procmon_log():
         return
 
 def copy_sysmon_log():
-    if not sysmon.copy_from_guest(config.VM_NAME, config.GUEST_USER, config.GUEST_PASS):
-        stop_sandbox()
-        return
+    sysmon.copy_from_guest(config.VM_NAME, config.GUEST_USER, config.GUEST_PASS)
 
 def stop_tcpdump():
-    if not tcpw.stop_tcpdump(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS):
-        stop_sandbox()
-        return
-    msg.done("Se ha detenido la captura de paquetes TCPDUMP.")
+    tcpw.stop_tcpdump(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS)
 
 def copy_tcpdump_log():
     if not file.copy_from_guest(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS, config.NETWORK_TCPDUMP_LOG, config.HOST_EVIDENCE_DIR):
