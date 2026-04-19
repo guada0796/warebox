@@ -90,6 +90,8 @@ def detonation(payload_path):
         return
     file.remove_from_host(payload_path)
 
+    file.setSignature()
+
     if not vbox.run_command_in_guest(guest_payload_path, f"Detonando payload '{config.PAYLOAD_EXE_NAME}'"):
         msg.warning("La detonación del payload podría haber fallado, se procederá a recolectar los logs")
 
@@ -120,6 +122,7 @@ def copy_tcpdump_log():
     if not file.copy_from_guest(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS, config.NETWORK_TCPDUMP_LOG, config.HOST_EVIDENCE_DIR):
         stop_sandbox()
         return
+    file.rename_tcpdump_log()
 
 def stop_recording():
     msg.recording("Deteniendo grabación de pantalla de la VM")

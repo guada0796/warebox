@@ -40,7 +40,7 @@ def copy_from_guest(vm_name, vm_guest_user, vm_guest_pass, guest_path, host_dir)
     
     # Normalizamos la ruta: reemplazamos las '\' de Windows por '/' para hacer el split de forma segura en ambos OS
     file_name = guest_path.replace('\\', '/').split('/')[-1]
-    file_name = file_name.replace("$fch$", cli.get_current_timestamp())
+    file_name = file_name.replace("$fch$", config.TIMESTAMP_SIGNATURE)
     
     # Construimos la ruta de destino completa en el host
     host_destination_path = Path(host_dir) / file_name
@@ -52,6 +52,12 @@ def copy_from_guest(vm_name, vm_guest_user, vm_guest_pass, guest_path, host_dir)
         "--username", vm_guest_user, "--password", vm_guest_pass
     ]
     return vbox.run_vbox_command(command, f"Descargando evidencia <{file_name}>")
+
+def setSignature():
+    """Función para establecer la firma de tiempo que se usará en los nombres de los logs."""
+    signature = cli.get_current_timestamp()
+    config.TIMESTAMP_SIGNATURE = signature
+    msg.done(f"Firma temporal establecida: {signature}")
 
 def update_config_file(updates):
     """
@@ -78,3 +84,25 @@ def update_config_file(updates):
     importlib.reload(config)
     msg.done("Archivo de configuración actualizado")
     time.sleep(1.5)
+
+def rename_tcpdump_log():
+    """Función para renombrar el archivo de log de tcpdump con la firma temporal."""
+    original_path = config.NETWORK_TCPDUMP_LOG
+    new_path_str = str(config.HOST_TCPDUMP_LOG_DIR)
+    new_path_str = new_path_str.replace("$fch$", config.TIMESTAMP_SIGNATURE)
+    new_path = Path(new_path_str)
+    if original_path.exists():
+        file_rename(original_path, new_path)
+    else:
+        msg.warning("El archivo de log de tcpdump no existe para renombrar.")
+
+def file_rename(current_path, new_path):
+    try:
+        os.rename(current_path, new_path)
+        print("Archivo renombrado correctamente.")
+    except FileNotFoundError:
+        print("El archivo no existe.")
+    except FileExistsError:
+        print("Ya existe un archivo con el nuevo nombre.")
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
