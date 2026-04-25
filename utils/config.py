@@ -39,6 +39,7 @@ HOST_DIR = Path.home() / "warebox-workspace"
 HOST_MALWARE_DIR = HOST_DIR / "Malware_Reports"
 HOST_TEMP_DIR = HOST_DIR / "Malware_Temp"
 HOST_EVIDENCE_DIR = HOST_DIR / "Malware_Evidence"
+HOST_TCPDUMP_OLD_LOG_DIR = HOST_EVIDENCE_DIR / "warebox-capture.pcap"
 HOST_TCPDUMP_LOG_DIR = HOST_EVIDENCE_DIR / "tcpdump_$fch$.pcap"
 
 # --- Clave para descomprimir archivos ---
@@ -56,5 +57,5 @@ WAIT_MALWARE_TIME = 10
 WAIT_WRITE_FILES_TIME = 10
 
 # --- Firma de tiempo que sirve para nombrar los resultados
-TIMESTAMP_SIGNATURE = ""
+TIMESTAMP_SIGNATURE = "20260424_000210"
 #sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap

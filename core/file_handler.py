@@ -56,7 +56,9 @@ def copy_from_guest(vm_name, vm_guest_user, vm_guest_pass, guest_path, host_dir)
 def setSignature():
     """Función para establecer la firma de tiempo que se usará en los nombres de los logs."""
     signature = cli.get_current_timestamp()
-    config.TIMESTAMP_SIGNATURE = signature
+    updates = {}
+    updates['TIMESTAMP_SIGNATURE'] = signature
+    update_config_file(updates)
     msg.done(f"Firma temporal establecida: {signature}")
 
 def update_config_file(updates):
@@ -87,7 +89,7 @@ def update_config_file(updates):
 
 def rename_tcpdump_log():
     """Función para renombrar el archivo de log de tcpdump con la firma temporal."""
-    original_path = config.NETWORK_TCPDUMP_LOG
+    original_path = config.HOST_TCPDUMP_OLD_LOG_DIR
     new_path_str = str(config.HOST_TCPDUMP_LOG_DIR)
     new_path_str = new_path_str.replace("$fch$", config.TIMESTAMP_SIGNATURE)
     new_path = Path(new_path_str)
