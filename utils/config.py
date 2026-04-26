@@ -41,6 +41,8 @@ HOST_TEMP_DIR = HOST_DIR / "Malware_Temp"
 HOST_EVIDENCE_DIR = HOST_DIR / "Malware_Evidence"
 HOST_TCPDUMP_OLD_LOG_DIR = HOST_EVIDENCE_DIR / "warebox-capture.pcap"
 HOST_TCPDUMP_LOG_DIR = HOST_EVIDENCE_DIR / "tcpdump_$fch$.pcap"
+HOST_PROCMON_LOG_DIR = HOST_EVIDENCE_DIR / "procmon_$fch$.pml"
+HOST_SYSMON_LOG_DIR = HOST_EVIDENCE_DIR / "sysmon_$fch$.evtx"
 
 # --- Clave para descomprimir archivos ---
 COMPRESS_KEY = "infected"

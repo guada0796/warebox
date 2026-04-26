@@ -3,6 +3,7 @@
 Módulo para gestionar el análisis manual de las evidencias recolectadas,
 reutilizando las funciones existentes de snapshot_manager.
 """
+from pathlib import Path
 import time
 from utils import config, cli_utils, messages as msg
 from services import vbox_manager as vbox
@@ -25,11 +26,14 @@ def new_analysis():
         return False
 
     msg.processing("Copiando archivos de evidencia a la VM")
-    evidence_files = [config.GUEST_PROCMON_LOG]
+    evidence_files = [config.HOST_PROCMON_LOG_DIR, config.HOST_SYSMON_LOG_DIR, config.HOST_TCPDUMP_LOG_DIR]
     for file_path in evidence_files:
-        host_file = config.HOST_EVIDENCE_DIR / file_path.split('\\')[-1]
+
+        filename = file_path.name.replace("$fch$", config.TIMESTAMP_SIGNATURE)
+        host_file = file_path.with_name(filename)
+        
         if host_file.exists():
-            file.copy_to_guest(host_file, file_path)
+            file.copy_to_guest(host_file, f"{config.GUEST_LOG_DIR}\\{filename}")
         else:
             msg.warning(f"Advertencia: No se encontró el archivo de evidencia '{host_file.name}' en el host")
 
