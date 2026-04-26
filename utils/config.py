@@ -9,7 +9,7 @@ PROJECT_NAME = "WAREBOX"
 
 # --- Configuración de las Máquinas Virtuales ---
 VM_NAME = "W10PRO"
-SNAPSHOT_NAME = "warebox-v11"
+SNAPSHOT_NAME = "warebox-v12"
 NETWORK_VM_NAME = "DEBIANET"
 NETWORK_SNAPSHOT_NAME = "fake-network-v3"
 

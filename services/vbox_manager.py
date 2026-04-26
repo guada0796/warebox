@@ -3,8 +3,7 @@
 Módulo para gestionar las operaciones de la máquina virtual con VBoxManage.
 """
 import subprocess
-from utils.config import VM_NAME, GUEST_USER, GUEST_PASS, GUEST_CMD_PATH, GUEST_POWERSHELL_PATH, HOST_EVIDENCE_DIR, SNAPSHOT_NAME, TIMESTAMP_SIGNATURE
-from datetime import datetime
+from utils import config
 from utils import messages as msg
 
 def run_vbox_command(command, description):
@@ -46,24 +45,24 @@ def stop_vm(vm_name):
 
 def run_command_in_guest(command, description):
     """Ejecuta un comando dentro de la VM invitada usando cmd.exe."""
-    full_command = ["VBoxManage", "guestcontrol", VM_NAME, "run", "--username", GUEST_USER, "--password", GUEST_PASS, "--exe", GUEST_CMD_PATH, "--", "/c", command]
+    full_command = ["VBoxManage", "guestcontrol", config.VM_NAME, "run", "--username", config.GUEST_USER, "--password", config.GUEST_PASS, "--exe", config.GUEST_CMD_PATH, "--", "/c", command]
     return run_vbox_command(full_command, description)
 
 def run_powershell_command(command, description):
     """Ejecuta un comando de PowerShell en la VM."""
-    full_command = ["VBoxManage", "guestcontrol", VM_NAME, "run", "--username", GUEST_USER, "--password", GUEST_PASS, "--exe", GUEST_POWERSHELL_PATH, "--", "-Command", command]
+    full_command = ["VBoxManage", "guestcontrol", config.VM_NAME, "run", "--username", config.GUEST_USER, "--password", config.GUEST_PASS, "--exe", config.GUEST_POWERSHELL_PATH, "--", "-Command", command]
     return run_vbox_command(full_command, description)
 
 # --- Grabación de pantalla nativa de VirtualBox (VBoxManage 7.2.6) ---
 def get_recording_filename():
     """Genera el nombre de archivo para la grabación según el formato solicitado."""
-    filename = f"{SNAPSHOT_NAME}-{TIMESTAMP_SIGNATURE}.webm"
-    return HOST_EVIDENCE_DIR / filename
+    filename = f"{config.SNAPSHOT_NAME}-{config.TIMESTAMP_SIGNATURE}.webm"
+    return config.HOST_EVIDENCE_DIR / filename
 
 def start_vm_recording(vm_name):
     """Configura y activa la grabación de pantalla de la VM (debe llamarse cuando la VM ya está corriendo)."""
     output_path = get_recording_filename()
-    HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
+    config.HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
     # 1. Configurar el nombre del archivo
     cmd_filename = ["VBoxManage", "controlvm", vm_name, "recording", "filename", str(output_path)]
     if not run_vbox_command(cmd_filename, f"Configurando archivo de grabación: {output_path}"):
