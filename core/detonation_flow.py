@@ -11,6 +11,8 @@ from services import tcpdum_wrapper as tcpw
 def run_analysis():
     """Ejecuta el flujo completo de análisis de una muestra."""
     
+    file.setSignature()
+
     #Crea el directorio de evidencia si no existe
     config.HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
 
@@ -89,8 +91,6 @@ def detonation(payload_path):
         stop_sandbox()
         return
     file.remove_from_host(payload_path)
-
-    file.setSignature()
 
     if not vbox.run_command_in_guest(guest_payload_path, f"Detonando payload '{config.PAYLOAD_EXE_NAME}'"):
         msg.warning("La detonación del payload podría haber fallado, se procederá a recolectar los logs")

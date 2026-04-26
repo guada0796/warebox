@@ -3,7 +3,7 @@
 Módulo para gestionar las operaciones de la máquina virtual con VBoxManage.
 """
 import subprocess
-from utils.config import VM_NAME, GUEST_USER, GUEST_PASS, GUEST_CMD_PATH, GUEST_POWERSHELL_PATH, HOST_EVIDENCE_DIR, SNAPSHOT_NAME
+from utils.config import VM_NAME, GUEST_USER, GUEST_PASS, GUEST_CMD_PATH, GUEST_POWERSHELL_PATH, HOST_EVIDENCE_DIR, SNAPSHOT_NAME, TIMESTAMP_SIGNATURE
 from datetime import datetime
 from utils import messages as msg
 
@@ -55,15 +55,14 @@ def run_powershell_command(command, description):
     return run_vbox_command(full_command, description)
 
 # --- Grabación de pantalla nativa de VirtualBox (VBoxManage 7.2.6) ---
-def _get_recording_filename():
+def get_recording_filename():
     """Genera el nombre de archivo para la grabación según el formato solicitado."""
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    filename = f"{VM_NAME}-{SNAPSHOT_NAME}-{timestamp}.webm"
+    filename = f"{SNAPSHOT_NAME}-{TIMESTAMP_SIGNATURE}.webm"
     return HOST_EVIDENCE_DIR / filename
 
 def start_vm_recording(vm_name):
     """Configura y activa la grabación de pantalla de la VM (debe llamarse cuando la VM ya está corriendo)."""
-    output_path = _get_recording_filename()
+    output_path = get_recording_filename()
     HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
     # 1. Configurar el nombre del archivo
     cmd_filename = ["VBoxManage", "controlvm", vm_name, "recording", "filename", str(output_path)]

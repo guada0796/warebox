@@ -10,7 +10,7 @@ from . import snapshot_menu as sm
 from utils import messages as msg
 
 from utils import cli_utils, config
-from core import detonation_flow
+from core import detonation_flow, file_handler as file
 
 def show_main_menu():
     """Muestra el menú principal y maneja las opciones del usuario."""
