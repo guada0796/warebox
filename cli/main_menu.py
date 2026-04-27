@@ -10,7 +10,7 @@ from . import snapshot_menu as sm
 from utils import messages as msg
 
 from utils import cli_utils, config
-from core import detonation_flow, file_handler as file
+from core import detonation_flow, automatic_analyzer as aa
 
 def show_main_menu():
     """Muestra el menú principal y maneja las opciones del usuario."""
@@ -41,6 +41,7 @@ def show_main_menu():
         print("   c. Cambiar configuración de análisis")
         print("   d. Detonar la muestra actual")
         print("   a. Analizar resultados (Manual)")
+        print("   h. Analizar resultados (Automático)")
         print("   g. Gestionar Snapshots de la VM")
         print("   s. Salir")
         
@@ -63,6 +64,9 @@ def show_main_menu():
 
         elif choice == 'g':
             sm.show_snapshot_menu()
+
+        elif choice == 'h':
+            aa.hayabusa_analysis()
 
         elif choice == 's':
             msg.cleaning("Saliendo")

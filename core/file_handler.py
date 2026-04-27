@@ -108,3 +108,8 @@ def file_rename(current_path, new_path):
         print("Ya existe un archivo con el nuevo nombre.")
     except Exception as e:
         print(f"Ocurrió un error: {e}")
+
+def get_timestamp_signature_file_name(file_path):
+    filename = file_path.name.replace("$fch$", config.TIMESTAMP_SIGNATURE)
+    host_file = file_path.with_name(filename)
+    return host_file

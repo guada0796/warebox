@@ -34,15 +34,18 @@ GUEST_SYSMON_LOG = f"{GUEST_LOG_DIR}\\sysmon_$fch$.evtx"
 # --- Rutas de Herramientas en la red Debian ---
 NETWORK_TCPDUMP_LOG = "/home/ucjc/warebox-capture.pcap"
 
-# --- Rutas en el Host (Ubuntu) ---
+# --- Rutas en el Host ---
 HOST_DIR = Path.home() / "warebox-workspace"
 HOST_MALWARE_DIR = HOST_DIR / "Malware_Reports"
 HOST_TEMP_DIR = HOST_DIR / "Malware_Temp"
 HOST_EVIDENCE_DIR = HOST_DIR / "Malware_Evidence"
+
 HOST_TCPDUMP_OLD_LOG_DIR = HOST_EVIDENCE_DIR / "warebox-capture.pcap"
 HOST_TCPDUMP_LOG_DIR = HOST_EVIDENCE_DIR / "tcpdump_$fch$.pcap"
 HOST_PROCMON_LOG_DIR = HOST_EVIDENCE_DIR / "procmon_$fch$.pml"
 HOST_SYSMON_LOG_DIR = HOST_EVIDENCE_DIR / "sysmon_$fch$.evtx"
+
+HOST_HAYABUSA_BIN_PATH = Path.home() / "github/warebox/dependencies/hayabusa/hayabusa-3.8.1-lin-x64-gnu"
 
 # --- Clave para descomprimir archivos ---
 COMPRESS_KEY = "infected"
@@ -59,5 +62,5 @@ WAIT_MALWARE_TIME = 10
 WAIT_WRITE_FILES_TIME = 10
 
 # --- Firma de tiempo que sirve para nombrar los resultados
-TIMESTAMP_SIGNATURE = "20260426_121323"
+TIMESTAMP_SIGNATURE = "20260426_230202"
 #sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap
