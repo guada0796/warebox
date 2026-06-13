@@ -9,7 +9,7 @@ PROJECT_NAME = "WAREBOX"
 
 # --- Configuración de las Máquinas Virtuales ---
 VM_NAME = "W10PRO"
-SNAPSHOT_NAME = "warebox-v13"
+SNAPSHOT_NAME = "warebox-v14"
 NETWORK_VM_NAME = "DEBIANET"
 NETWORK_SNAPSHOT_NAME = "fake-network-v3"
 
@@ -62,5 +62,5 @@ WAIT_MALWARE_TIME = 10
 WAIT_WRITE_FILES_TIME = 10
 
 # --- Firma de tiempo que sirve para nombrar los resultados
-TIMESTAMP_SIGNATURE = "20260502_093156"
+TIMESTAMP_SIGNATURE = "20260610_201151"
 #sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap

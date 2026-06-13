@@ -29,9 +29,21 @@ def hayabusa_analysis():
             for alerta in resultados['alertas_medias'][:5]: # Mostramos max 5 para no saturar
                 print(f"    [{alerta['timestamp']}] {alerta['regla']}")
 
-        print("\n\nb. Volver al menú principal")
+        print("\n\ng. Generar informe")
+        print("\nb. Volver al menú principal")
         choice = input("\nSeleccione una opción: ").lower()
 
+        if choice == 'g':
+            if resultados:
+                from services import report_generator
+                payload = config.PAYLOAD_EXE_NAME.replace(".zip", "_")
+                report_name = f"{payload}_{config.TIMESTAMP_SIGNATURE}.pdf"
+                pdf_path = report_generator.generate_pdf(
+                    sample_name=report_name, 
+                    hayabusa_results=resultados, 
+                    output_dir=config.HOST_EVIDENCE_DIR
+                )
+                print(f"\n[+] Análisis finalizado. Revisa el documento en {pdf_path}")
         if choice == 'b':
             main_menu.show_main_menu()
         else:
