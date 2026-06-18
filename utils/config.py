@@ -62,5 +62,5 @@ WAIT_MALWARE_TIME = 10
 WAIT_WRITE_FILES_TIME = 10
 
 # --- Firma de tiempo que sirve para nombrar los resultados
-TIMESTAMP_SIGNATURE = "20260610_201151"
+TIMESTAMP_SIGNATURE = "20260617_234315"
 #sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap

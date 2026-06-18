@@ -52,12 +52,12 @@ def list_snapshots():
     try:
         result = subprocess.run(command, check=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
         
-        msg.line_break()
+        msg.line_break(1)
         if result.stdout:
             msg.info(result.stdout.strip())
         else:
             msg.warning("No se encontraron snapshots para esta VM")
-        msg.line_break()
+        msg.line_break(1)
 
     except subprocess.CalledProcessError as e:
         if "Could not find a snapshot" in e.stderr:

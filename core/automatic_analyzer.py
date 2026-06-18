@@ -1,12 +1,13 @@
 import time
 
-from utils import config, cli_utils
+from utils import config, cli_utils, messages as msg
 from core import file_handler as file
 from services import hayabusa_wrapper as hayabusa
 from cli import main_menu
 
 def hayabusa_analysis():
     cli_utils.clear_screen()
+    msg.title("Análisis Automático con Hayabusa")
     evtx_path = file.get_timestamp_signature_file_name(config.HOST_SYSMON_LOG_DIR)
     # 3. Análisis con Inteligencia de Amenazas (Hayabusa)
     if evtx_path:
@@ -14,37 +15,47 @@ def hayabusa_analysis():
         
         # 4. Presentación de Resultados
         if resultados:
-            print("\n" + "="*50)
-            print("🛡️ REPORTE DE INTELIGENCIA WAREBOX")
-            print("="*50)
-            print(f"[*] Tácticas MITRE ATT&CK detectadas:")
+            msg.line_break(2)
+            msg.separation_specific_line("radioactive")
+            msg.info("Reporte de Inteligencia WAREBOX")
+            msg.separation_specific_line("radioactive")
+            msg.line_break(1)
+            msg.warning("Tácticas MITRE ATT&CK detectadas")
             for tactica in resultados['tacticas_mitre']:
-                print(f"    - {tactica}")
+                msg.pin(f"{tactica}")
             
-            print(f"\n[!] Alertas Críticas/Altas: {len(resultados['alertas_criticas_altas'])}")
+            msg.line_break(1)
+            msg.alarm(f"Alertas Críticas/Altas: {len(resultados['alertas_criticas_altas'])}")
             for alerta in resultados['alertas_criticas_altas']:
-                print(f"    [{alerta['timestamp']}] {alerta['regla']}")
+                msg.pin(f"[{alerta['timestamp']}] {alerta['regla']}")
                 
-            print(f"\n[!] Alertas Medias: {len(resultados['alertas_medias'])}")
+            msg.line_break(1)
+            msg.alarm(f"Alertas Medias: {len(resultados['alertas_medias'])}")
             for alerta in resultados['alertas_medias'][:5]: # Mostramos max 5 para no saturar
-                print(f"    [{alerta['timestamp']}] {alerta['regla']}")
+                msg.pin(f"[{alerta['timestamp']}] {alerta['regla']}")
 
-        print("\n\ng. Generar informe")
-        print("\nb. Volver al menú principal")
+        msg.line_break(2)
+        msg.options("Opciones")
+        msg.item("g. Generar Informe")
+        msg.item("b. Volver al Menú Principal")
+        
         choice = input("\nSeleccione una opción: ").lower()
 
         if choice == 'g':
             if resultados:
                 from services import report_generator
                 payload = config.PAYLOAD_EXE_NAME.replace(".zip", "_")
-                report_name = f"{payload}_{config.TIMESTAMP_SIGNATURE}.pdf"
+                report_name = f"{payload}_{config.TIMESTAMP_SIGNATURE}"
                 pdf_path = report_generator.generate_pdf(
                     sample_name=report_name, 
                     hayabusa_results=resultados, 
                     output_dir=config.HOST_EVIDENCE_DIR
                 )
-                print(f"\n[+] Análisis finalizado. Revisa el documento en {pdf_path}")
+                msg.line_break(1)
+                msg.done(f"Análisis finalizado. Revisa el documento en {pdf_path}")
+                msg.wait_key()
+                return
         if choice == 'b':
             main_menu.show_main_menu()
         else:
-            print("❌ Opción no válida. Inténtelo de nuevo."); time.sleep(1)
+            msg.error("Opción no válida. Inténtelo de nuevo"); time.sleep(1)

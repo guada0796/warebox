@@ -60,10 +60,10 @@ def open_analysis():
 
     if not vbox.restore_start_vm_gui(config.VM_NAME, config.SNAPSHOT_NAME): return
 
-    msg.line_break()
+    msg.line_break(1)
     msg.done("Entorno de análisis restaurado")
     msg.info("Presione Enter aquí cuando haya finalizado su análisis en la VM")
-    msg.line_break()
+    msg.line_break(1)
     
     save = input("\n¿Desea guardar los cambios (actualizar el timestamp del snapshot)? (s/N): ").lower()
     if save == 's':

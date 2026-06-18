@@ -11,12 +11,13 @@ def show_snapshot_menu():
         # --- CORRECCIÓN: Llamamos a la función desde 'config' ---
         cli_utils.clear_screen()
         msg.title("Gestión de Snapshots")
-        print(f"VM actual: {config.VM_NAME}")
-        print("   1. Listar snapshots existentes")
-        print("   2. Crear un snapshot")
-        print("   3. Restaurar un snapshot")
-        print("   4. Eliminar un snapshot")
-        print("   b. Volver al menú principal")
+        msg.done(f"VM actual: {config.VM_NAME}")
+        msg.options("Opciones:")
+        msg.item(f"1. Listar snapshots existentes")
+        msg.item(f"2. Crear un snapshot")
+        msg.item(f"3. Restaurar un snapshot")
+        msg.item(f"4. Eliminar un snapshot")
+        msg.item(f"b. Volver al menú principal")
         
         choice = input("\nElige una opción: ").lower()
         
@@ -31,7 +32,7 @@ def show_snapshot_menu():
         elif choice == 'b':
             break
         else:
-            print("❌ Opción no válida. Inténtelo de nuevo.")
+            msg.error("Opción no válida. Inténtelo de nuevo.")
         
         if choice in ['1', '2', '3', '4']:
-            input("\n--- Presione Enter para continuar ---")
+            msg.wait_key()

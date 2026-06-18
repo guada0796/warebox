@@ -13,9 +13,10 @@ def show_analysis_menu():
         
         cli_utils.clear_screen()
         msg.title("Menú de Análisis Manual")
-        print(f"   1. Nuevo Análisis de la Última Detonación (desde el snapshot base). Firma: <{config.TIMESTAMP_SIGNATURE}>")
-        print("   2. Abrir Análisis Guardado (desde un snapshot existente)")
-        print("   b. Volver al menú principal")
+        msg.options("Opciones:")
+        msg.item(f"1. Nuevo Análisis de la Última Detonación (desde el snapshot base). Firma: <{config.TIMESTAMP_SIGNATURE}>")
+        msg.item(f"2. Abrir Análisis Guardado (desde un snapshot existente)")
+        msg.item(f"b. Volver al menú principal")
 
         choice = input("\nSeleccione una opción: ").lower()
 
@@ -26,4 +27,4 @@ def show_analysis_menu():
         elif choice == 'b':
             break
         else:
-            print("❌ Opción no válida. Inténtelo de nuevo."); time.sleep(1)
+            msg.error("Opción no válida. Inténtelo de nuevo."); time.sleep(1)

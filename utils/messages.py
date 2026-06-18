@@ -42,20 +42,53 @@ def finishing(message):
 def decompressing(message):
     print(f"📦 {message}...")
 
+def pin(message):
+    print(f"   📌 {message}")
+
+def options(message):
+    print(f"▶️  {message}")
+
+def list(message):
+    print(f"📋 {message}")
+
+def wait_key():
+    input("\n--- Presione Enter para continuar ---")
+
 def item(message):
-    print(f"📌 {message}")
+    print(f"   > {message}")
 
-def line_break():
-    print("\n")
+def alarm(message):
+    print(f"🚨 {message}.")
 
-def separation_line():
+def line_break(rep):
+    for i in range(rep):
+        print("\n")
+
+def separation_detault_line():
+    separation_specific_line("alien")
+
+def separation_specific_line(grapic):
     #🦠💀☣️👾🛡️☣☢️🚨
-    print(f"👾"*rep)
+    match(grapic):
+        case "virus":
+            print(f"🦠"*rep)
+        case "skull":
+            print(f"💀"*rep)
+        case "biohazard":            
+            print(f"☣️ "*rep)
+        case "alien":
+            print(f"👾"*rep)
+        case "shield":
+            print(f"🛡️"*rep)
+        case "radioactive":
+            print(f"☢️ "*rep)
+        case "alarm":
+            print(f"🚨"*rep)
 
 def title(message):
     message = f" {message} "
     exedentes = (rep - len(message)) // 2    
-    separation_line()
+    separation_detault_line()
     print("⠀⠀ "*exedentes + message)
-    separation_line()
-    line_break()
+    separation_detault_line()
+    line_break(1)

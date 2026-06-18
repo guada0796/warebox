@@ -1,3 +1,80 @@
+###
+DEPENDENCIAS GENERALES
+###
+sudo apt update && sudo apt install -y unzip
 sudo apt install python3.12-venv
 sudo apt install python3-pip
-sudo apt update && sudo apt install -y unzip
+
+
+
+
+
+###
+PREPARAR EL ENTORNO VIRTUAL DE PYTHON
+###
+1. Si el entorno virtual está creado, desactivarlo:
+deactivate
+
+2.Backup del entorno virtual actual:
+mv venv venv_backup
+
+3. Ver las dependencias antiguas:
+ls venv_backup/lib/python3.*/site-packages/
+
+4. Crear un nuevo entorno virtual:
+python3 -m venv venv
+source venv/bin/activate
+pip install python-evtx fpdf2
+
+
+
+
+
+###
+HAYABUSA
+###
+1. Instalación y Preparación en tu Host Linux
+A diferencia de las librerías de Python, Hayabusa es un binario compilado independiente.
+Descarga el binario: Ve al repositorio oficial en GitHub de Yamato Security (Yamato-Security/hayabusa) y descarga la última versión para Linux (usualmente el archivo hayabusa-linux-gnu).
+Ubicación: Crea un directorio en tu proyecto, por ejemplo, tools/hayabusa/, y extrae el binario allí. Dale permisos de ejecución: chmod +x hayabusa.
+Descarga de Reglas Sigma (Crucial): Hayabusa necesita saber qué buscar. Tiene un comando integrado para descargar las últimas reglas Sigma de la comunidad. Ejecuta en tu terminal:
+
+Bash
+./hayabusa update-rules
+
+Esto descargará una carpeta rules/ con miles de detecciones conocidas (inyección de procesos, evasión de UAC, persistencia, etc).
+
+2. Probando Hayabusa manualmente
+Antes de meterlo a Python, veamos qué hace. Si ya tienes un archivo reporte_sysmon.evtx, corre este comando:
+
+Bash
+./hayabusa csv-timeline -f /ruta/a/reporte_sysmon.evtx -o reporte_analisis.csv
+
+Si abres ese CSV, verás que en lugar de leer "Event ID 1", ahora leerás cosas como: "Suspicious PowerShell Download", "MITRE T1059.001 (Command and Scripting Interpreter)", Nivel: High. Hayabusa acaba de interpretar el malware por ti.
+
+
+
+
+
+###
+En caso de error:
+stvn@chernobyl:~/github/warebox/dependencies/hayabusa$ ./hayabusa-3.8.1-lin-x64-gnu 
+[ERROR] Cannot open file. [file:rules/config/generic_abbreviations.txt] 
+[WARN] Field mapping dir[rules/config/data_mapping] does not exist. 
+[ERROR] Cannot open file. [file:rules/config/channel_abbreviations.txt] 
+[ERROR] Cannot open file. [file:rules/config/provider_abbreviations.txt] 
+[ERROR] Cannot open file. [file:rules/config/default_details.txt] 
+[ERROR] Cannot open file. [file:rules/config/eventkey_alias.txt] 
+[ERROR] Cannot open file. [file:rules/config/channel_eid_info.txt] 
+[ERROR] Cannot open file. [file:rules/config/target_event_IDs.txt]
+###
+
+Solución
+Desde el directorio actual:
+cd ~/github/warebox/dependencies/hayabusa
+rm -rf rules
+git clone https://github.com/Yamato-Security/hayabusa-rules.git rules
+
+Luego verifica:
+
+find rules -maxdepth 2 -type d | sort | head -20
