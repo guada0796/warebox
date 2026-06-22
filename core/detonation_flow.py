@@ -3,15 +3,20 @@
 Script final que recolecta los logs en bruto: un log de ProcMon.
 """
 import time
-from utils import config, messages as msg
+from utils import config, messages as msg, cli_utils
 from services import vbox_manager as vbox, procmon_wrapper as procmon, sysmon_wrapper as sysmon
 from core import file_handler as file
 from services import tcpdum_wrapper as tcpw
 
 def run_analysis():
     """Ejecuta el flujo completo de análisis de una muestra."""
-    
+    cli_utils.clear_screen()
+    msg.title("Detonación de Malware - WAREBOX")
+
     file.setSignature()
+
+    record = True if input("¿Desea grabar la sesión? esto reduce el consumo de recursos del HOST (s/N): ").lower() == "s" else False
+    auto_detonation = True if input("¿Desea detonar automaticamente la muestra? (s/N): ").lower() == "s" else False
 
     #Crea el directorio de evidencia si no existe
     config.HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
@@ -22,17 +27,20 @@ def run_analysis():
 
     start_tcpdump()
 
-    start_procmon()
+    #Deshabilitado temporalmente por generación de ruido en log de sysmon.
+    #start_procmon()
 
-    start_recording()
+    if record:
+        start_recording()
 
-    detonation(payload_path)
+    detonation(payload_path, auto_detonation)
 
-    stop_recording()
+    if record:
+        stop_recording()
 
-    stop_procmon()
-
-    copy_procmon_log()
+    #Deshabilitado temporalmente por generación de ruido en log de sysmon.
+    #stop_procmon()
+    #copy_procmon_log()
 
     copy_sysmon_log()
 
@@ -41,8 +49,10 @@ def run_analysis():
     copy_tcpdump_log()
     
     stop_sandbox()
+    msg.line_break(2)
     msg.finishing("¡Análisis del malware completado!")
     msg.info(f"Los archivos de evidencia se encuentran en: {config.HOST_EVIDENCE_DIR}")
+    msg.wait_key()
 
 def decompress_malware():
     #Descomprime la muestra en el host para luego copiarla a la VM
@@ -83,7 +93,7 @@ def start_procmon():
         stop_sandbox()
         return
     
-def detonation(payload_path):
+def detonation(payload_path, auto_detonation):
     # Despliegue y Detonación
     guest_payload_path = config.GUEST_PAYLOAD_PATH_TEMPLATE.format(payload_name=config.PAYLOAD_EXE_NAME)
     if not file.copy_to_guest(payload_path, guest_payload_path):
@@ -92,11 +102,20 @@ def detonation(payload_path):
         return
     file.remove_from_host(payload_path)
 
-    if not vbox.run_command_in_guest(guest_payload_path, f"Detonando payload '{config.PAYLOAD_EXE_NAME}'"):
-        msg.warning("La detonación del payload podría haber fallado, se procederá a recolectar los logs")
+    if auto_detonation:
+        if not vbox.run_command_in_guest(guest_payload_path, f"Detonando payload '{config.PAYLOAD_EXE_NAME}'"):
+            msg.warning("La detonación del payload podría haber fallado, se procederá a recolectar los logs")
 
-    msg.waiting(f"Esperando {config.WAIT_MALWARE_TIME} segundos para que el malware actúe")
-    time.sleep(config.WAIT_MALWARE_TIME)
+        msg.waiting(f"Esperando {config.WAIT_MALWARE_TIME} segundos para que el malware actúe")
+        time.sleep(config.WAIT_MALWARE_TIME)
+
+    else:
+        msg.line_break(1)
+        msg.separation_specific_line("virus")
+        print("La muestra se encuentra en el Escritorio de la VM, ejecute y realice las pruebas." \
+            "\nCuando haya terminado vuelva a este terminal y presione cualquier tecla para continuar.")
+        msg.separation_specific_line("virus")
+        msg.wait_key()
 
 def stop_procmon():
     # Detener Monitoreo

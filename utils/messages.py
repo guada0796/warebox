@@ -52,7 +52,7 @@ def list(message):
     print(f"📋 {message}")
 
 def wait_key():
-    input("\n--- Presione Enter para continuar ---")
+    input("\n--- Presione Enter para continuar ---\n")
 
 def item(message):
     print(f"   > {message}")
@@ -79,7 +79,7 @@ def separation_specific_line(grapic):
         case "alien":
             print(f"👾"*rep)
         case "shield":
-            print(f"🛡️"*rep)
+            print(f"🛡️ "*rep)
         case "radioactive":
             print(f"☢️ "*rep)
         case "alarm":

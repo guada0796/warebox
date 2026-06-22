@@ -26,7 +26,11 @@ def new_analysis():
         return False
 
     msg.processing("Copiando archivos de evidencia a la VM")
-    evidence_files = [config.HOST_PROCMON_LOG_DIR, config.HOST_SYSMON_LOG_DIR, config.HOST_TCPDUMP_LOG_DIR]
+    
+    #Deshabilitado temporalmente por generación de ruido en log de sysmon.
+    #evidence_files = [config.HOST_PROCMON_LOG_DIR, config.HOST_SYSMON_LOG_DIR, config.HOST_TCPDUMP_LOG_DIR]
+    evidence_files = [config.HOST_SYSMON_LOG_DIR, config.HOST_TCPDUMP_LOG_DIR]
+    
     for file_path in evidence_files:
 
         filename = file_path.name.replace("$fch$", config.TIMESTAMP_SIGNATURE)
