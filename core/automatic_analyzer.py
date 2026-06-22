@@ -4,6 +4,7 @@ from utils import config, cli_utils, messages as msg
 from core import file_handler as file
 from services import hayabusa_wrapper as hayabusa
 from cli import main_menu
+from services import report_generator
 
 def hayabusa_analysis():
     cli_utils.clear_screen()
@@ -42,10 +43,9 @@ def hayabusa_analysis():
         choice = input("\nSeleccione una opción: ").lower()
 
         if choice == 'g':
-            if resultados:
-                from services import report_generator
-                payload = config.PAYLOAD_EXE_NAME.replace(".zip", "_")
-                report_name = f"{payload}_{config.TIMESTAMP_SIGNATURE}"
+            if resultados:                
+                payload = config.ZIP_FILENAME.replace(".zip", "_")
+                report_name = f"{payload}{config.TIMESTAMP_SIGNATURE}"
                 pdf_path = report_generator.generate_pdf(
                     sample_name=report_name, 
                     hayabusa_results=resultados, 

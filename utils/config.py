@@ -9,7 +9,7 @@ PROJECT_NAME = "WAREBOX"
 
 # --- Configuración de las Máquinas Virtuales ---
 VM_NAME = "W10PRO"
-SNAPSHOT_NAME = "warebox-v14"
+SNAPSHOT_NAME = "warebox-v15"
 NETWORK_VM_NAME = "DEBIANET"
 NETWORK_SNAPSHOT_NAME = "fake-network-v3"
 
@@ -23,7 +23,8 @@ NETWORK_GUEST_PASS = "ucjc"
 
 # --- Rutas de Herramientas en el Guest ---
 GUEST_TOOLS_DIR = "C:\\Tools"
-GUEST_PAYLOAD_PATH_TEMPLATE = f"{GUEST_TOOLS_DIR}\\{{payload_name}}"
+#GUEST_PAYLOAD_PATH_TEMPLATE = f"{GUEST_TOOLS_DIR}\\{{payload_name}}"
+GUEST_PAYLOAD_PATH_TEMPLATE = f"C:\\Users\\{GUEST_USER}\\Desktop\\{{payload_name}}"
 GUEST_PROCMON_PATH = f"{GUEST_TOOLS_DIR}\\Procmon.exe"
 GUEST_POWERSHELL_PATH = f"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
 GUEST_CMD_PATH = f"C:\\Windows\\System32\\cmd.exe"
@@ -45,7 +46,7 @@ HOST_TCPDUMP_LOG_DIR = HOST_EVIDENCE_DIR / "tcpdump_$fch$.pcap"
 HOST_PROCMON_LOG_DIR = HOST_EVIDENCE_DIR / "procmon_$fch$.pml"
 HOST_SYSMON_LOG_DIR = HOST_EVIDENCE_DIR / "sysmon_$fch$.evtx"
 
-HOST_HAYABUSA_BIN_PATH = Path.home() / "github/warebox/dependencies/hayabusa/hayabusa-3.8.1-lin-x64-gnu"
+HAYABUSA_BIN_PATH = Path.home() / "github/warebox/dependencies/hayabusa/hayabusa-3.8.1-lin-x64-gnu"
 
 # --- Clave para descomprimir archivos ---
 COMPRESS_KEY = "infected"
@@ -62,5 +63,5 @@ WAIT_MALWARE_TIME = 10
 WAIT_WRITE_FILES_TIME = 10
 
 # --- Firma de tiempo que sirve para nombrar los resultados
-TIMESTAMP_SIGNATURE = "20260617_234315"
+TIMESTAMP_SIGNATURE = "20260622_113211"
 #sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap

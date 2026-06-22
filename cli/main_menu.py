@@ -38,6 +38,7 @@ def show_main_menu():
         msg.item(f"Directorio de Logs (Guest):  {config.GUEST_LOG_DIR}")
         msg.item(f"Directorio de Malware (Host): {config.HOST_MALWARE_DIR}")
         msg.item(f"Directorio de Evidencia (Host): {config.HOST_EVIDENCE_DIR}")
+        msg.item(f"Firma de Tiempo Actual: {config.TIMESTAMP_SIGNATURE}")
 
         msg.line_break(1)
         msg.options("Opciones:")

@@ -84,8 +84,6 @@ def update_config_file(updates):
                 f.write(line)
     
     importlib.reload(config)
-    msg.done("Archivo de configuración actualizado")
-    time.sleep(1.5)
 
 def rename_tcpdump_log():
     """Función para renombrar el archivo de log de tcpdump con la firma temporal."""

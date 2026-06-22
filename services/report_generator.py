@@ -1,10 +1,12 @@
-# services/report_generator.py
+"""
+Módulo para la generación de reportes técnicos DFIR en formato PDF.
+"""
 from fpdf import FPDF
 from datetime import datetime
 from pathlib import Path
 import textwrap
 import re
-from utils import messages as msg
+from utils import messages as msg, config
 
 class DFIRReport(FPDF):
     def header(self):
@@ -21,7 +23,7 @@ class DFIRReport(FPDF):
         self.set_y(-15)
         self.set_font("helvetica", "I", 8)
         self.set_text_color(128, 128, 128)
-        self.cell(0, 10, f"Pagina {self.page_no()}", align="C")
+        self.cell(0, 10, f"Página {self.page_no()}", align="C")
 
     def section_title(self, title):
         self.set_font("helvetica", "B", 12)
@@ -32,93 +34,147 @@ class DFIRReport(FPDF):
 
 def write_safe_lines(pdf, text, max_chars=95):
     """
-    El AS en la manga: Reemplazamos la función defectuosa de FPDF2.
-    Nosotros calculamos el salto de línea, fpdf2 solo imprime de forma segura.
+    Imprime líneas de texto de forma segura calculando los saltos de línea.
     """
     if not text: 
         text = "N/A"
         
-    # Sanitización estricta
     texto_limpio = str(text).encode('latin-1', 'ignore').decode('latin-1')
     texto_limpio = re.sub(r'\s+', ' ', texto_limpio).strip()
     
-    # Textwrap rompe palabras largas (Base64) sin importar qué contengan
     lineas = textwrap.wrap(texto_limpio, width=max_chars, break_long_words=True)
     
     if not lineas:
         pdf.cell(0, 5, "N/A", ln=True)
     else:
         for linea in lineas:
-            # cell() con ln=True es mecánicamente infalible
             pdf.cell(0, 5, linea, ln=True)
+
+def print_formatted_details(pdf, detalles):
+    """
+    Toma el diccionario crudo de detalles y lo formatea como una lista
+    elegante de viñetas para el reporte.
+    """
+    pdf.set_font("helvetica", "", 9)
+    pdf.set_text_color(80, 80, 80)
+    
+    if isinstance(detalles, dict):
+        for key, value in detalles.items():
+            # Ignoramos valores vacíos para ahorrar espacio
+            if value and str(value).strip():
+                # Acortamos valores inmensos (como base64 o rutas larguísimas)
+                val_str = str(value)
+                if len(val_str) > 250:
+                    val_str = val_str[:247] + "..."
+                write_safe_lines(pdf, f"    • {key}: {val_str}", max_chars=90)
+    else:
+        # Si por alguna razón es un string puro
+        write_safe_lines(pdf, f"    • Detalles: {detalles}")
 
 def generate_pdf(sample_name, hayabusa_results, output_dir):
     """
-    Orquesta la creación del PDF usando exclusivamente funciones seguras.
+    Orquesta la creación del PDF formateado.
     """
     pdf = DFIRReport()
     pdf.add_page()
     
     fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Asumimos que el nombre de la muestra suele ser el SHA256
+    hash_sha256 = config.ZIP_FILENAME.replace(".zip", "").replace(".ZIP", "") if len(config.ZIP_FILENAME) >= 64 else "Desconocido"
 
-    # 1. RESUMEN EJECUTIVO
+    # ==========================================
+    # 1. RESUMEN EJECUTIVO (Refinado)
+    # ==========================================
     pdf.section_title("1. Resumen Ejecutivo")
+    
+    # Datos de la Muestra
+    pdf.set_font("helvetica", "B", 10)
+    pdf.set_text_color(50, 50, 50)
+    write_safe_lines(pdf, "[ Información de la Muestra ]")
     pdf.set_font("helvetica", "", 10)
-    pdf.set_text_color(0, 0, 0)
-    resumen = (
-        f"Fecha de Analisis: {fecha_actual} | "
-        f"Muestra: {sample_name} | "
-        f"Tacticas MITRE detectadas: {len(hayabusa_results['tacticas_mitre'])} | "
-        f"Alertas Altas: {len(hayabusa_results['alertas_criticas_altas'])} | "
-        f"Alertas Medias: {len(hayabusa_results['alertas_medias'])}"
-    )
-    write_safe_lines(pdf, resumen)
+    write_safe_lines(pdf, f"  • Archivo Analizado : {config.ZIP_FILENAME}")
+    write_safe_lines(pdf, f"  • Hash SHA256     : {hash_sha256}")
+    write_safe_lines(pdf, f"  • Fecha Análisis    : {fecha_actual}")
+    pdf.ln(3)
+    
+    # Resultados Globales
+    pdf.set_font("helvetica", "B", 10)
+    write_safe_lines(pdf, "[ Resultados del Análisis Automático ]")
+    pdf.set_font("helvetica", "", 10)
+    write_safe_lines(pdf, f"  • Tácticas MITRE Detectadas : {len(hayabusa_results.get('tacticas_mitre', []))}")
+    write_safe_lines(pdf, f"  • Alertas Críticas / Altas     : {len(hayabusa_results.get('alertas_criticas_altas', []))}")
+    write_safe_lines(pdf, f"  • Alertas de Severidad Media : {len(hayabusa_results.get('alertas_medias', []))}")
     pdf.ln(5)
 
-    # 2. ENTORNO
-    pdf.section_title("2. Entorno de Analisis (Sandbox)")
+    # ==========================================
+    # 2. ENTORNO (Refinado)
+    # ==========================================
+    pdf.section_title("2. Entorno de Análisis (Sandbox)")
     pdf.set_font("helvetica", "", 10)
-    write_safe_lines(pdf, "Plataforma Host: Linux | Hipervisor: VirtualBox | Telemetria: Sysmon | Inteligencia: Hayabusa")
+    pdf.set_text_color(50, 50, 50)
+    write_safe_lines(pdf, "  • Plataforma Host   : Linux Mint (Ubuntu base)")
+    write_safe_lines(pdf, "  • Plataforma Guest  : Windows 10 (VirtualBox)")
+    write_safe_lines(pdf, "  • Motor Telemetría  : Sysmon (Configuración Sandbox Permisiva)")
+    write_safe_lines(pdf, "  • Motor Inteligencia: Hayabusa (Reglas Sigma)")
+    write_safe_lines(pdf, "  • Capa de Red       : INetSim + TCPDump")
     pdf.ln(5)
 
-    # 3. MITRE
+    # ==========================================
+    # 3. MITRE ATT&CK
+    # ==========================================
     pdf.section_title("3. Mapeo de Amenazas (MITRE ATT&CK)")
-    pdf.set_font("helvetica", "", 10)
-    if hayabusa_results['tacticas_mitre']:
+    
+    if hayabusa_results.get('tacticas_mitre'):
+        pdf.set_font("helvetica", "B", 10)
+        pdf.set_text_color(50, 50, 50)
+        write_safe_lines(pdf, "[ Tácticas Identificadas - Ciclo de Ataque ]")
+        pdf.set_font("helvetica", "", 10)
         for t in hayabusa_results['tacticas_mitre']:
-            write_safe_lines(pdf, f"* {t}")
+            write_safe_lines(pdf, f"  * {t}")
     else:
-        write_safe_lines(pdf, "No se detectaron tacticas catalogadas.")
+        write_safe_lines(pdf, "No se detectaron tácticas catalogadas.")
+    pdf.ln(3)
+    
+    if hayabusa_results.get('tecnicas_mitre'):
+        pdf.set_font("helvetica", "B", 10)
+        pdf.set_text_color(50, 50, 50)
+        write_safe_lines(pdf, "[ Técnicas Específicas (IDs) ]")
+        pdf.set_font("helvetica", "", 10)
+        tecnicas_str = ", ".join(hayabusa_results['tecnicas_mitre'])
+        write_safe_lines(pdf, f"  {tecnicas_str}")
     pdf.ln(5)
 
-    # 4. CRÍTICAS
-    pdf.section_title("4. Linea de Tiempo - Eventos Criticos y Altos")
-    if hayabusa_results['alertas_criticas_altas']:
+    # ==========================================
+    # 4. ALERTAS CRÍTICAS Y ALTAS
+    # ==========================================
+    pdf.section_title("4. Línea de Tiempo - Eventos Críticos y Altos")
+    if hayabusa_results.get('alertas_criticas_altas'):
         for alerta in hayabusa_results['alertas_criticas_altas']:
             pdf.set_font("helvetica", "B", 10)
             pdf.set_text_color(192, 57, 43)
             write_safe_lines(pdf, f"[{alerta.get('timestamp')}] REGLA: {alerta.get('regla')}")
             
-            pdf.set_font("helvetica", "", 9)
-            pdf.set_text_color(50, 50, 50)
-            write_safe_lines(pdf, f"Detalle: {alerta.get('detalles')}")
+            # Usamos la nueva función para imprimir los detalles limpios
+            print_formatted_details(pdf, alerta.get('detalles'))
             pdf.ln(3)
     else:
         pdf.set_font("helvetica", "", 10)
-        write_safe_lines(pdf, "No se registraron eventos criticos o altos.")
+        write_safe_lines(pdf, "No se registraron eventos críticos o altos.")
         pdf.ln(3)
 
-    # 5. MEDIAS
+    # ==========================================
+    # 5. ALERTAS MEDIAS
+    # ==========================================
     pdf.section_title("5. Eventos de Severidad Media")
-    if hayabusa_results['alertas_medias']:
+    if hayabusa_results.get('alertas_medias'):
         for alerta in hayabusa_results['alertas_medias']:
             pdf.set_font("helvetica", "B", 10)
             pdf.set_text_color(211, 84, 0)
             write_safe_lines(pdf, f"[{alerta.get('timestamp')}] REGLA: {alerta.get('regla')}")
             
-            pdf.set_font("helvetica", "", 9)
-            pdf.set_text_color(50, 50, 50)
-            write_safe_lines(pdf, f"Detalle: {alerta.get('detalles')}")
+            # Usamos la nueva función para imprimir los detalles limpios
+            print_formatted_details(pdf, alerta.get('detalles'))
             pdf.ln(3)
     else:
         pdf.set_font("helvetica", "", 10)

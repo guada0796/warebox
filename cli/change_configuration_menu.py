@@ -54,5 +54,6 @@ def change_configuration_menu():
             
         if updates:
             file_handler.update_config_file(updates)
-            # Después de actualizar, salimos del submenú para ver los cambios en el menú principal
-            break
+            msg.done("Archivo de configuración actualizado")
+            msg.wait_key()
+            change_configuration_menu()  # Recargamos el menú para mostrar los cambios
