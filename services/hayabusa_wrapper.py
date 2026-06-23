@@ -20,6 +20,22 @@ def analyze_evtx(evtx_path, output_dir):
     evtx_file = Path(evtx_path)
     output_json = Path(output_dir) / f"{evtx_file.stem}_hayabusa.json"
 
+    # Validar si el archivo .json ya existe, preguntar por sobrescribir
+    if output_json.exists():
+        overwrite = True if input(f"El archivo {output_json} ya existe. ¿Desea sobrescribirlo? (s/N): ").lower() == 's' else False
+        if not overwrite:
+            msg.line_break(1)
+            msg.info("Análisis cancelado por el usuario.")
+            return None
+        
+        # Eliminar el archivo existente antes de ejecutar Hayabusa
+        try:
+            output_json.unlink()
+            msg.info(f"Archivo existente {output_json} eliminado.")
+        except Exception as e:
+            msg.error(f"No se pudo eliminar el archivo existente: {e}")
+            return None
+
     comando = [
         str(HAYABUSA_BIN_PATH), "json-timeline",
         "-f", str(evtx_file),

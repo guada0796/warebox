@@ -35,28 +35,30 @@ def hayabusa_analysis():
             for alerta in resultados['alertas_medias'][:5]: # Mostramos max 5 para no saturar
                 msg.pin(f"[{alerta['timestamp']}] {alerta['regla']}")
 
-        msg.line_break(2)
-        msg.options("Opciones")
-        msg.item("g. Generar Informe")
-        msg.item("b. Volver al Menú Principal")
-        
-        choice = input("\nSeleccione una opción: ").lower()
+            msg.line_break(2)
+            msg.options("Opciones")
+            msg.item("g. Generar Informe")
+            msg.item("b. Volver al Menú Principal")
+            
+            choice = input("\nSeleccione una opción: ").lower()
 
-        if choice == 'b':
-            return
-
-        if choice == 'g':
-            if resultados:                
-                payload = config.ZIP_FILENAME.replace(".zip", "_")
-                report_name = f"{payload}{config.TIMESTAMP_SIGNATURE}"
-                pdf_path = report_generator.generate_pdf(
-                    sample_name=report_name, 
-                    hayabusa_results=resultados, 
-                    output_dir=config.HOST_EVIDENCE_DIR
-                )
-                msg.line_break(1)
-                msg.done(f"Análisis finalizado. Revisa el documento en {pdf_path}")
-                msg.wait_key()
+            if choice == 'b':
                 return
-        else:
-            msg.error("Opción no válida. Inténtelo de nuevo"); time.sleep(1)
+
+            if choice == 'g':
+                if resultados:                
+                    payload = config.ZIP_FILENAME.replace(".zip", "_")
+                    report_name = f"{payload}{config.TIMESTAMP_SIGNATURE}"
+                    pdf_path = report_generator.generate_pdf(
+                        sample_name=report_name, 
+                        hayabusa_results=resultados, 
+                        output_dir=config.HOST_EVIDENCE_DIR
+                    )
+                    msg.line_break(1)
+                    msg.done(f"Análisis finalizado. Revisa el documento en {pdf_path}")
+                    msg.wait_key()
+                    return
+            else:
+                msg.error("Opción no válida. Inténtelo de nuevo"); time.sleep(1)
+
+        msg.wait_key()

@@ -124,19 +124,20 @@ def generate_pdf(sample_name, hayabusa_results, output_dir):
     # 3. MITRE ATT&CK
     # ==========================================
     pdf.section_title("3. Mapeo de Amenazas (MITRE ATT&CK)")
-    
+    tactics_count = 0
     if hayabusa_results.get('tacticas_mitre'):
         pdf.set_font("helvetica", "B", 10)
         pdf.set_text_color(50, 50, 50)
         write_safe_lines(pdf, "[ Tácticas Identificadas - Ciclo de Ataque ]")
         pdf.set_font("helvetica", "", 10)
         for t in hayabusa_results['tacticas_mitre']:
+            tactics_count += 1
             write_safe_lines(pdf, f"  * {t}")
     else:
         write_safe_lines(pdf, "No se detectaron tácticas catalogadas.")
     pdf.ln(3)
     
-    if hayabusa_results.get('tecnicas_mitre'):
+    if hayabusa_results.get('tecnicas_mitre') and tactics_count > 0:
         pdf.set_font("helvetica", "B", 10)
         pdf.set_text_color(50, 50, 50)
         write_safe_lines(pdf, "[ Técnicas Específicas (IDs) ]")
