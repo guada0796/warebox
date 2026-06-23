@@ -9,7 +9,7 @@ PROJECT_NAME = "WAREBOX"
 
 # --- Configuración de las Máquinas Virtuales ---
 VM_NAME = "W10PRO"
-SNAPSHOT_NAME = "warebox-v16"
+SNAPSHOT_NAME = "warebox-v17"
 NETWORK_VM_NAME = "DEBIANET"
 NETWORK_SNAPSHOT_NAME = "fake-network-v3"
 
@@ -52,8 +52,8 @@ HAYABUSA_BIN_PATH = Path.home() / "github/warebox/dependencies/hayabusa/hayabusa
 COMPRESS_KEY = "infected"
 
 # --- Muestra a Analizar ---
-ZIP_FILENAME = "rufus.zip"
-PAYLOAD_NAME = "rufus.exe"
+ZIP_FILENAME = "9f844a78cc2cd8d8a426f050a3efe319930f723eb10be231de1c1f1600e82127.zip"
+PAYLOAD_NAME = "9f844a78cc2cd8d8a426f050a3efe319930f723eb10be231de1c1f1600e82127.exe"
 
 # --- Tiempo de espera en segundos para que arranque la VM --
 WAIT_START_TIME = 30
@@ -63,5 +63,5 @@ WAIT_MALWARE_TIME = 10
 WAIT_WRITE_FILES_TIME = 10
 
 # --- Firma de tiempo que sirve para nombrar los resultados
-TIMESTAMP_SIGNATURE = "20260623_113004"
+TIMESTAMP_SIGNATURE = "20260623_134742"
 #sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap

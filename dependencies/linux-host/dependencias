@@ -78,3 +78,11 @@ git clone https://github.com/Yamato-Security/hayabusa-rules.git rules
 Luego verifica:
 
 find rules -maxdepth 2 -type d | sort | head -20
+
+
+###
+PARA ACTUALIZAR LA CONFIGURACION DE SISMON
+###
+Actualizar la configuración directamente en el archivo
+Dirigirse a la carpeta de sysmon C:\Tools\Sysmon
+cd c:\Tools\Sysmon\ && sysmon64.exe -c sandbox_config.xml && wevtutil cl "Microsoft-Windows-Sysmon/Operational" && shutdown /s /t 0

@@ -3,6 +3,7 @@ Menu de principal con todas las opciones para gestionar el entorno de detonació
 """
 
 import time
+import os
 
 from . import change_configuration_menu as ccm
 from . import analisys_menu as am
@@ -10,7 +11,7 @@ from . import snapshot_menu as sm
 from utils import messages as msg
 
 from utils import cli_utils, config
-from core import detonation_flow, automatic_analyzer as aa
+from core import detonation_flow, automatic_analyzer as aa, file_handler
 
 def show_main_menu():
     """Muestra el menú principal y maneja las opciones del usuario."""
@@ -52,13 +53,17 @@ def show_main_menu():
         choice = input("\nSeleccione una opción: ").lower()
 
         if choice == 'd':
-            msg.line_break(1)
-            msg.starting("Iniciando proceso de detonación automática")
-            time.sleep(1)
-            detonation_flow.run_analysis()
-            msg.line_break(1)
-            msg.done("Proceso de detonación automática finalizado")
-            msg.separation_detault_line()
+            current_payload = True if input(f"¿Desea detonar la muestra actual ({config.PAYLOAD_NAME})? (s/N): ").lower() == 's' else False
+
+            if current_payload or select_payload():
+                msg.line_break(1)
+                msg.starting("Iniciando proceso de detonación automática")
+                time.sleep(1)
+                detonation_flow.run_analysis()
+                msg.line_break(1)
+                msg.done("Proceso de detonación automática finalizado")
+                msg.separation_detault_line()
+                
         
         elif choice == 'a':
             am.show_analysis_menu()
@@ -78,3 +83,41 @@ def show_main_menu():
         else:
             msg.error("Opción no válida. Inténtelo de nuevo")
             time.sleep(1)
+
+def select_payload():
+    # Obtener lista de archivos .zip
+    zips = [f for f in os.listdir(config.HOST_MALWARE_DIR) if f.lower().endswith(".zip")]
+    msg.line_break(1)
+    if not zips:
+        msg.error("No se encontraron archivos .zip en el directorio.")
+        msg.wait_key()
+        return False
+
+    # Mostrar opciones
+    msg.options("Muestras disponibles:")
+    for i, archivo in enumerate(zips, start=1):
+        msg.item(f"{i}. {archivo}")
+    msg.item("b. Volver al menú principal")
+    msg.line_break(1)
+    # Pedir selección al usuario
+    while True:
+        try:
+            choice = input("Elige la muestra: ")
+            if choice == 'b':
+                return False
+
+            payloadNumber = int(choice)    
+            if 1 <= payloadNumber <= len(zips):
+                seleccionado = zips[payloadNumber - 1]
+                extension = input("¿Qué extensión tiene la muestra (exe, bin, dll...)?: ").lower()
+                updates = {}
+                updates['ZIP_FILENAME'] = seleccionado
+                updates['PAYLOAD_NAME'] = seleccionado.replace(".zip", "."+extension)
+                file_handler.update_config_file(updates)
+                return True
+            else:
+                msg.line_break(1)
+                msg.error("Número fuera de rango. Intenta de nuevo.")
+        except ValueError:
+            msg.line_break(1)
+            msg.error("Entrada inválida. Debes ingresar un número.")
