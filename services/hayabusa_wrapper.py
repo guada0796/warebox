@@ -4,8 +4,9 @@ Módulo para automatizar el escaneo de archivos .evtx utilizando Hayabusa.
 import subprocess
 import json
 import re
+from datetime import datetime
 from pathlib import Path
-from utils import messages as msg
+from utils import messages as msg, config
 
 # Asegúrate de definir la ruta correcta a tu binario en utils/config.py
 from utils.config import HAYABUSA_BIN_PATH 
@@ -89,6 +90,23 @@ def _parse_results(json_path):
 
             if not isinstance(evento, dict):
                 continue
+
+            # --- FILTRO TEMPORAL EN PYTHON ---
+            # Si recibimos la hora de inicio de la detonación, se la pasamos a Hayabusa
+            signature = datetime.strptime(config.TIMESTAMP_SIGNATURE, "%Y%m%d_%H%M%S")
+            start_time = signature.strftime("%Y-%m-%d %H:%M:%S")
+            msg.info(f"Aplicando filtro temporal. Analizando eventos a partir de: {start_time}")
+            if start_time:
+                evt_time_raw = str(evento.get("Timestamp", ""))
+                if evt_time_raw:
+                    # Extraemos solo los primeros 19 caracteres (YYYY-MM-DD HH:MM:SS)
+                    # y aseguramos que tenga espacio en lugar de 'T'
+                    evt_time = evt_time_raw[:19].replace("T", " ")
+                    
+                    # Si el evento ocurrió ANTES de detonar la muestra, lo ignoramos
+                    if evt_time < start_time:
+                        continue
+            # ---------------------------------
             
             nivel = evento.get("Level", "").lower()
             
