@@ -58,7 +58,7 @@ def decompress_malware():
     #Descomprime la muestra en el host para luego copiarla a la VM
     msg.decompressing("Descomprimiendo la muestra")
     zip_path = config.HOST_MALWARE_DIR / config.ZIP_FILENAME
-    payload_path = file.decompress_sample_on_host(zip_path, config.COMPRESS_KEY, config.HOST_TEMP_DIR, config.PAYLOAD_EXE_NAME)
+    payload_path = file.decompress_sample_on_host(zip_path, config.COMPRESS_KEY, config.HOST_TEMP_DIR, config.PAYLOAD_NAME)
     if not payload_path: return
 
     return payload_path
@@ -95,7 +95,7 @@ def start_procmon():
     
 def detonation(payload_path, auto_detonation):
     # Despliegue y Detonación
-    guest_payload_path = config.GUEST_PAYLOAD_PATH_TEMPLATE.format(payload_name=config.PAYLOAD_EXE_NAME)
+    guest_payload_path = config.GUEST_PAYLOAD_PATH_TEMPLATE.format(payload_name=config.PAYLOAD_NAME)
     if not file.copy_to_guest(payload_path, guest_payload_path):
         vbox.stop_vm_recording(config.VM_NAME)
         stop_sandbox()
@@ -103,7 +103,7 @@ def detonation(payload_path, auto_detonation):
     file.remove_from_host(payload_path)
 
     if auto_detonation:
-        if not vbox.run_command_in_guest(guest_payload_path, f"Detonando payload '{config.PAYLOAD_EXE_NAME}'"):
+        if not vbox.run_command_in_guest(guest_payload_path, f"Detonando payload '{config.PAYLOAD_NAME}'"):
             msg.warning("La detonación del payload podría haber fallado, se procederá a recolectar los logs")
 
         msg.waiting(f"Esperando {config.WAIT_MALWARE_TIME} segundos para que el malware actúe")

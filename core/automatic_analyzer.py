@@ -42,6 +42,9 @@ def hayabusa_analysis():
         
         choice = input("\nSeleccione una opción: ").lower()
 
+        if choice == 'b':
+            return
+
         if choice == 'g':
             if resultados:                
                 payload = config.ZIP_FILENAME.replace(".zip", "_")
@@ -55,7 +58,5 @@ def hayabusa_analysis():
                 msg.done(f"Análisis finalizado. Revisa el documento en {pdf_path}")
                 msg.wait_key()
                 return
-        if choice == 'b':
-            main_menu.show_main_menu()
         else:
             msg.error("Opción no válida. Inténtelo de nuevo"); time.sleep(1)

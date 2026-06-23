@@ -22,13 +22,16 @@ def change_configuration_menu():
         msg.item(f"3. Contraseña (Guest):   {config.GUEST_PASS}")
         msg.item(f"4. Clave del ZIP:        {config.COMPRESS_KEY}")
         msg.item(f"5. Archivo ZIP:          {config.ZIP_FILENAME}")
-        msg.item(f"6. Payload EXE:          {config.PAYLOAD_EXE_NAME}")
+        msg.item(f"6. Payload:              {config.PAYLOAD_NAME}")
         msg.item(f"7. Espera Arranque VM:   {config.WAIT_START_TIME}s")
         msg.item(f"8. Espera Análisis Malware:     {config.WAIT_MALWARE_TIME}s")
         msg.item(f"9. Espera Escritura Resultados: {config.WAIT_WRITE_FILES_TIME}s")
         msg.item("b. Volver al menú principal")
         
         choice = input("\nElige el número del parámetro a modificar (o 'b' para volver): ").lower()
+
+        if choice == 'b': 
+            return
         
         updates = {}
         try:
@@ -38,11 +41,10 @@ def change_configuration_menu():
             elif choice == '3': updates['GUEST_PASS'] = input("   Nueva Contraseña (Guest): ")
             elif choice == '4': updates['COMPRESS_KEY'] = input("   Nueva Clave del ZIP: ")
             elif choice == '5': updates['ZIP_FILENAME'] = input("   Nuevo Archivo ZIP: ")
-            elif choice == '6': updates['PAYLOAD_EXE_NAME'] = input("   Nuevo Payload EXE: ")
+            elif choice == '6': updates['PAYLOAD_NAME'] = input("   Nuevo Payload: ")
             elif choice == '7': updates['WAIT_START_TIME'] = int(input("   Nuevo Tiempo de Arranque (s): "))
             elif choice == '8': updates['WAIT_MALWARE_TIME'] = int(input("   Nuevo Tiempo de Análisis (s): "))
             elif choice == '9': updates['WAIT_WRITE_FILES_TIME'] = int(input("   Nuevo Tiempo de Escritura (s): "))
-            elif choice == 'b': break
             else:
                 msg.error("Opción no válida.")
                 time.sleep(1)
@@ -56,4 +58,3 @@ def change_configuration_menu():
             file_handler.update_config_file(updates)
             msg.done("Archivo de configuración actualizado")
             msg.wait_key()
-            change_configuration_menu()  # Recargamos el menú para mostrar los cambios

@@ -21,6 +21,9 @@ def show_snapshot_menu():
         
         choice = input("\nElige una opción: ").lower()
         
+        if choice == 'b':
+            return
+
         if choice == '1':
             sm.list_snapshots()
         elif choice == '2':
@@ -29,8 +32,6 @@ def show_snapshot_menu():
             sm.restore_snapshot()
         elif choice == '4':
             sm.delete_snapshot()
-        elif choice == 'b':
-            break
         else:
             msg.error("Opción no válida. Inténtelo de nuevo.")
         

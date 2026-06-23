@@ -20,11 +20,12 @@ def show_analysis_menu():
 
         choice = input("\nSeleccione una opción: ").lower()
 
+        if choice == 'b':
+            return
+
         if choice == '1':
             ma.new_analysis()
         elif choice == '2':
             ma.open_analysis()
-        elif choice == 'b':
-            break
         else:
             msg.error("Opción no válida. Inténtelo de nuevo."); time.sleep(1)

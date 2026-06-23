@@ -26,7 +26,7 @@ def show_main_menu():
         msg.item(f"3. Contraseña (Guest):   {config.GUEST_PASS}")
         msg.item(f"4. Clave del ZIP:        {config.COMPRESS_KEY}")
         msg.item(f"5. Archivo ZIP:          {config.ZIP_FILENAME}")
-        msg.item(f"6. Payload EXE:          {config.PAYLOAD_EXE_NAME}")
+        msg.item(f"6. Payload:              {config.PAYLOAD_NAME}")
         msg.item(f"7. Espera Arranque VM:   {config.WAIT_START_TIME}s")
         msg.item(f"8. Espera Análisis Malware:     {config.WAIT_MALWARE_TIME}s")
         msg.item(f"9. Espera Escritura Resultados: {config.WAIT_WRITE_FILES_TIME}s")
