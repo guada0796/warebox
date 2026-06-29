@@ -4,6 +4,7 @@ Módulo para manejar la descompresión de muestras, transferencia y acciones de 
 """
 from pathlib import Path
 import subprocess, os, time, importlib
+import hashlib
 from utils import config, messages as msg, cli_utils as cli
 from services import vbox_manager as vbox
 
@@ -61,6 +62,14 @@ def setSignature():
     update_config_file(updates)
     msg.done(f"Firma temporal establecida: {signature}")
 
+def setSHA256(payload_path):
+    """Función para establecer el SHA256 de la muestra."""
+    sha256 = calculate_sha256(payload_path)
+    updates = {}
+    updates['PAYLOAD_SHA256'] = sha256
+    update_config_file(updates)
+    msg.done(f"SHA256 de la muestra descomprimida: {sha256}")
+
 def update_config_file(updates):
     """
     Lee el archivo config.py, actualiza las claves especificadas y lo reescribe.
@@ -111,3 +120,11 @@ def get_timestamp_signature_file_name(file_path):
     filename = file_path.name.replace("$fch$", config.TIMESTAMP_SIGNATURE)
     host_file = file_path.with_name(filename)
     return host_file
+
+def calculate_sha256(file_path):
+    """Calcula el hash SHA256 de un archivo."""
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()

@@ -94,7 +94,7 @@ def generate_pdf(sample_name, hayabusa_results, output_dir):
     write_safe_lines(pdf, "[ Información de la Muestra ]")
     pdf.set_font("helvetica", "", 10)
     write_safe_lines(pdf, f"  • Archivo Analizado : {config.ZIP_FILENAME}")
-    write_safe_lines(pdf, f"  • Hash SHA256     : {hash_sha256}")
+    write_safe_lines(pdf, f"  • Hash SHA256     : {config.PAYLOAD_SHA256}")
     write_safe_lines(pdf, f"  • Fecha Análisis    : {fecha_actual}")
     pdf.ln(3)
     

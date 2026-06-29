@@ -44,7 +44,7 @@ def show_main_menu():
         msg.line_break(1)
         msg.options("Opciones:")
         msg.item("c. Cambiar configuración de análisis")
-        msg.item("d. Detonar la muestra actual")
+        msg.item("d. Detonar una muestra")
         msg.item("a. Analizar resultados (Manual)")
         msg.item("h. Analizar resultados (Automático)")
         msg.item("g. Gestionar Snapshots de la VM")

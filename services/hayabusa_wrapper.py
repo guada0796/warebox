@@ -75,6 +75,11 @@ def _parse_results(json_path):
         posicion = 0
         longitud = len(contenido)
 
+        # Si recibimos la hora de inicio de la detonación, se la pasamos a Hayabusa
+        signature = datetime.strptime(config.TIMESTAMP_SIGNATURE, "%Y%m%d_%H%M%S")
+        start_time = signature.strftime("%Y-%m-%d %H:%M:%S")
+        msg.info(f"Aplicando filtro temporal. Analizando eventos a partir de: {start_time}")
+
         while posicion < longitud:
             while posicion < longitud and contenido[posicion].isspace():
                 posicion += 1
@@ -93,9 +98,6 @@ def _parse_results(json_path):
 
             # --- FILTRO TEMPORAL EN PYTHON ---
             # Si recibimos la hora de inicio de la detonación, se la pasamos a Hayabusa
-            signature = datetime.strptime(config.TIMESTAMP_SIGNATURE, "%Y%m%d_%H%M%S")
-            start_time = signature.strftime("%Y-%m-%d %H:%M:%S")
-            msg.info(f"Aplicando filtro temporal. Analizando eventos a partir de: {start_time}")
             if start_time:
                 evt_time_raw = str(evento.get("Timestamp", ""))
                 if evt_time_raw:

@@ -60,7 +60,8 @@ def decompress_malware():
     zip_path = config.HOST_MALWARE_DIR / config.ZIP_FILENAME
     payload_path = file.decompress_sample_on_host(zip_path, config.COMPRESS_KEY, config.HOST_TEMP_DIR, config.PAYLOAD_NAME)
     if not payload_path: return
-
+    #Calcula el SHA256 de la muestra descomprimida
+    file.setSHA256(payload_path)
     return payload_path
 
 def start_vms():
