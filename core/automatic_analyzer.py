@@ -3,6 +3,7 @@ import time
 from utils import config, cli_utils, messages as msg
 from core import file_handler as file
 from services import hayabusa_wrapper as hayabusa
+from services import suricata_wrapper as suricata  # <-- NUEVO IMPORT
 from cli import main_menu
 from services import report_generator
 
@@ -11,19 +12,49 @@ def hayabusa_analysis():
     while repeat:
         repeat = False
         cli_utils.clear_screen()
-        msg.title("Análisis Automático con Hayabusa")
+        msg.title("Análisis Automático Multi-Capa (Endpoint + Red)")
+        
+        # 1. Obtenemos las rutas de las evidencias (Endpoint y Red)
         evtx_path = file.get_timestamp_signature_file_name(config.HOST_SYSMON_LOG_DIR)
-        # 3. Análisis con Inteligencia de Amenazas (Hayabusa)
+        pcap_path = file.get_timestamp_signature_file_name(config.HOST_TCPDUMP_LOG_DIR)
+        
+        # 2. Análisis con Inteligencia de Amenazas
         if evtx_path:
             resultados = hayabusa.analyze_evtx(evtx_path, config.HOST_EVIDENCE_DIR)
             
-            # 4. Presentación de Resultados
+            '''
+            # --- NUEVA LÓGICA DE SURICATA ---
+            if pcap_path:
+                msg.line_break(1)
+                resultados_red = suricata.analyze_pcap(pcap_path, config.HOST_EVIDENCE_DIR)
+                
+                if resultados_red:
+                    # Fusionamos las listas de alertas de red con las del endpoint
+                    resultados['alertas_criticas_altas'].extend(resultados_red['alertas_criticas_altas'])
+                    resultados['alertas_medias'].extend(resultados_red['alertas_medias'])
+                    
+                    # ORDEN CRONOLÓGICO: Magia pura para la línea de tiempo del PDF
+                    resultados['alertas_criticas_altas'] = sorted(
+                        resultados['alertas_criticas_altas'], 
+                        key=lambda x: x.get('timestamp', '')
+                    )
+                    resultados['alertas_medias'] = sorted(
+                        resultados['alertas_medias'], 
+                        key=lambda x: x.get('timestamp', '')
+                    )
+            else:
+                msg.warning("No se encontró archivo .pcap para análisis de red.")
+            # --------------------------------
+            '''
+            
+            # 3. Presentación de Resultados
             if resultados:
                 msg.line_break(2)
                 msg.separation_specific_line("radioactive")
                 msg.info("Reporte de Inteligencia WAREBOX")
                 msg.separation_specific_line("radioactive")
                 msg.line_break(1)
+                
                 msg.warning("Tácticas MITRE ATT&CK detectadas")
                 for tactica in resultados['tacticas_mitre']:
                     msg.pin(f"{tactica}")
@@ -35,7 +66,7 @@ def hayabusa_analysis():
                     
                 msg.line_break(1)
                 msg.alarm(f"Alertas Medias: {len(resultados['alertas_medias'])}")
-                for alerta in resultados['alertas_medias'][:5]: # Mostramos max 5 para no saturar
+                for alerta in resultados['alertas_medias'][:5]: 
                     msg.pin(f"[{alerta['timestamp']}] {alerta['regla']}")
 
                 msg.line_break(2)
