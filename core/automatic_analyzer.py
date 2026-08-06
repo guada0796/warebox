@@ -22,9 +22,8 @@ def hayabusa_analysis():
         if evtx_path:
             resultados = hayabusa.analyze_evtx(evtx_path, config.HOST_EVIDENCE_DIR)
             
-            '''
             # --- NUEVA LÓGICA DE SURICATA ---
-            if pcap_path:
+            if config.ENABLE_SURICATA and pcap_path:
                 msg.line_break(1)
                 resultados_red = suricata.analyze_pcap(pcap_path, config.HOST_EVIDENCE_DIR)
                 
@@ -42,10 +41,9 @@ def hayabusa_analysis():
                         resultados['alertas_medias'], 
                         key=lambda x: x.get('timestamp', '')
                     )
-            else:
+            elif config.ENABLE_SURICATA:
                 msg.warning("No se encontró archivo .pcap para análisis de red.")
             # --------------------------------
-            '''
             
             # 3. Presentación de Resultados
             if resultados:

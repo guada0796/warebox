@@ -6,7 +6,7 @@ import time
 import os
 
 from . import change_configuration_menu as ccm
-from . import analisys_menu as am
+from . import analysis_menu as am
 from . import snapshot_menu as sm
 from utils import messages as msg
 
@@ -57,9 +57,13 @@ def show_main_menu():
 
             if current_payload or select_payload():
                 msg.line_break(1)
+                record = True if input("¿Desea grabar la sesión? esto reduce el consumo de recursos del HOST (s/N): ").lower() == 's' else False
+                auto_detonation = True if input("¿Desea detonar automaticamente la muestra? (s/N): ").lower() == 's' else False
+                
+                msg.line_break(1)
                 msg.starting("Iniciando proceso de detonación automática")
                 time.sleep(1)
-                detonation_flow.run_analysis()
+                detonation_flow.run_analysis(record=record, auto_detonation=auto_detonation)
                 msg.line_break(1)
                 msg.done("Proceso de detonación automática finalizado")
                 msg.separation_detault_line()

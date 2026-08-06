@@ -6,17 +6,14 @@ import time
 from utils import config, messages as msg, cli_utils
 from services import vbox_manager as vbox, procmon_wrapper as procmon, sysmon_wrapper as sysmon
 from core import file_handler as file
-from services import tcpdum_wrapper as tcpw
+from services import tcpdump_wrapper as tcpw
 
-def run_analysis():
+def run_analysis(record=False, auto_detonation=False):
     """Ejecuta el flujo completo de análisis de una muestra."""
     cli_utils.clear_screen()
     msg.title("Detonación de Malware - WAREBOX")
 
     file.setSignature()
-
-    record = True if input("¿Desea grabar la sesión? esto reduce el consumo de recursos del HOST (s/N): ").lower() == "s" else False
-    auto_detonation = True if input("¿Desea detonar automaticamente la muestra? (s/N): ").lower() == "s" else False
 
     #Crea el directorio de evidencia si no existe
     config.HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
@@ -27,8 +24,8 @@ def run_analysis():
 
     start_tcpdump()
 
-    #Deshabilitado temporalmente por generación de ruido en log de sysmon.
-    #start_procmon()
+    if config.ENABLE_PROCMON:
+        start_procmon()
 
     if record:
         start_recording()
@@ -38,9 +35,9 @@ def run_analysis():
     if record:
         stop_recording()
 
-    #Deshabilitado temporalmente por generación de ruido en log de sysmon.
-    #stop_procmon()
-    #copy_procmon_log()
+    if config.ENABLE_PROCMON:
+        stop_procmon()
+        copy_procmon_log()
 
     copy_sysmon_log()
 

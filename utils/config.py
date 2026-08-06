@@ -46,7 +46,11 @@ HOST_TCPDUMP_LOG_DIR = HOST_EVIDENCE_DIR / "tcpdump_$fch$.pcap"
 HOST_PROCMON_LOG_DIR = HOST_EVIDENCE_DIR / "procmon_$fch$.pml"
 HOST_SYSMON_LOG_DIR = HOST_EVIDENCE_DIR / "sysmon_$fch$.evtx"
 
-HAYABUSA_BIN_PATH = Path.home() / "github/warebox/dependencies/hayabusa/hayabusa-3.8.1-lin-x64-gnu"
+HAYABUSA_BIN_PATH = Path(__file__).resolve().parent.parent / "dependencies" / "hayabusa" / "hayabusa-3.8.1-lin-x64-gnu"
+
+# --- Feature Flags ---
+ENABLE_PROCMON = False
+ENABLE_SURICATA = False
 
 # --- Clave para descomprimir archivos ---
 COMPRESS_KEY = "infected"
@@ -64,5 +68,5 @@ WAIT_MALWARE_TIME = 10
 WAIT_WRITE_FILES_TIME = 10
 
 # --- Firma de tiempo que sirve para nombrar los resultados
-TIMESTAMP_SIGNATURE = "20260725_172823"
+TIMESTAMP_SIGNATURE = "20260805_233108"
 #sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap

@@ -10,12 +10,12 @@ from services import vbox_manager as vbox
 from core import file_handler as file
 from services import snapshot_manager
 
-def new_analysis():
+def setup_new_analysis():
     """Prepara un entorno limpio con las evidencias para un nuevo análisis manual."""
     cli_utils.clear_screen()
     msg.title("Nuevo Análisis Manual")
     
-    if not vbox.restore_start_vm_gui(config.VM_NAME, config.SNAPSHOT_NAME): return
+    if not vbox.restore_start_vm_gui(config.VM_NAME, config.SNAPSHOT_NAME): return False
     
     msg.waiting(f"Esperando {config.WAIT_START_TIME} segundos para el arranque completo")
     time.sleep(config.WAIT_START_TIME)
@@ -27,9 +27,9 @@ def new_analysis():
 
     msg.processing("Copiando archivos de evidencia a la VM")
     
-    #Deshabilitado temporalmente por generación de ruido en log de sysmon.
-    #evidence_files = [config.HOST_PROCMON_LOG_DIR, config.HOST_SYSMON_LOG_DIR, config.HOST_TCPDUMP_LOG_DIR]
     evidence_files = [config.HOST_SYSMON_LOG_DIR, config.HOST_TCPDUMP_LOG_DIR]
+    if config.ENABLE_PROCMON:
+        evidence_files.insert(0, config.HOST_PROCMON_LOG_DIR)
     
     for file_path in evidence_files:
 
@@ -42,39 +42,15 @@ def new_analysis():
             msg.warning(f"Advertencia: No se encontró el archivo de evidencia '{host_file.name}' en el host")
 
     msg.done("Entorno listo para el análisis manual")
-    input("\n--- Presione Enter aquí cuando haya finalizado su análisis en la VM. ---")
-    
-    save = input("\n¿Desea guardar el estado actual de su análisis como un nuevo snapshot? (s/N): ").lower()
-    if save == 's':
-        snapshot_manager.create_snapshot()
-    
-    vbox.stop_vm(config.VM_NAME)
-    msg.done("Análisis finalizado")
-    time.sleep(2)
+    return True
 
-def open_analysis():
+def restore_analysis(snapshot_to_open):
     """Restaura un snapshot de un análisis guardado previamente."""
     cli_utils.clear_screen()
     msg.title("Abrir Análisis Guardado")
     
-    snapshot_manager.list_snapshots()
-    snapshot_to_open = input("\nIntroduce el nombre exacto del snapshot de análisis que deseas abrir: ")
-    if not snapshot_to_open:
-        msg.error("El nombre no puede estar vacío"); time.sleep(2); return
-
-    if not vbox.restore_start_vm_gui(config.VM_NAME, config.SNAPSHOT_NAME): return
+    if not vbox.restore_start_vm_gui(config.VM_NAME, snapshot_to_open): return False
 
     msg.line_break(1)
     msg.done("Entorno de análisis restaurado")
-    msg.info("Presione Enter aquí cuando haya finalizado su análisis en la VM")
-    msg.line_break(1)
-    
-    save = input("\n¿Desea guardar los cambios (actualizar el timestamp del snapshot)? (s/N): ").lower()
-    if save == 's':
-        base_name = snapshot_to_open.rsplit('_', 1)[0]
-        final_snapshot_name = f"{base_name}_{cli_utils.get_current_timestamp()}"
-        vbox.run_vbox_command(["VBoxManage", "snapshot", config.VM_NAME, "take", final_snapshot_name], f"Creando snapshot actualizado '{final_snapshot_name}'")
-
-    vbox.stop_vm(config.VM_NAME)
-    msg.done("Análisis finalizado")
-    time.sleep(2)
+    return True
