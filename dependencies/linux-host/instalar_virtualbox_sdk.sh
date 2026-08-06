@@ -3,13 +3,13 @@
 # ============================
 # CONFIGURACIÓN
 # ============================
-VBOX_VERSION="7.2.6"
-VBOX_BUILD="172322"
+VBOX_VERSION="7.2.14"
+VBOX_BUILD="174565"
 SDK_ZIP="VirtualBoxSDK-${VBOX_VERSION}-${VBOX_BUILD}.zip"
 SDK_URL="https://download.virtualbox.org/virtualbox/${VBOX_VERSION}/${SDK_ZIP}"
 SDK_TEMP_DIR="/tmp/virtualbox-sdk"
 SDK_DEST_DIR="/opt/virtualbox-sdk"
-VENV_DIR="$HOME/Documentos/universidades/ucjc/clases-ciberseguridad/tfm/warebox/venv"
+VENV_DIR="$HOME/github/warebox/venv"
 PYTHON_BIN="python3"
 
 # ============================

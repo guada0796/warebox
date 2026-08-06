@@ -16,10 +16,10 @@ PREPARAR EL ENTORNO VIRTUAL DE PYTHON
 deactivate
 
 2.Backup del entorno virtual actual:
-mv venv venv_backup
+mv venv venv-backup
 
 3. Ver las dependencias antiguas:
-ls venv_backup/lib/python3.*/site-packages/
+ls venv-backup/lib/python3.*/site-packages/
 
 4. Crear un nuevo entorno virtual:
 python3 -m venv venv
@@ -40,7 +40,7 @@ Ubicación: Crea un directorio en tu proyecto, por ejemplo, tools/hayabusa/, y e
 Descarga de Reglas Sigma (Crucial): Hayabusa necesita saber qué buscar. Tiene un comando integrado para descargar las últimas reglas Sigma de la comunidad. Ejecuta en tu terminal:
 
 Bash
-./hayabusa update-rules
+./hayabusa-3.8.1-lin-x64-gnu update-rules
 
 Esto descargará una carpeta rules/ con miles de detecciones conocidas (inyección de procesos, evasión de UAC, persistencia, etc).
 
