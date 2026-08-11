@@ -6,15 +6,25 @@ class ConfigView(ctk.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        # Contenedor central para que todo se centre al maximizar
-        self.center_container = ctk.CTkFrame(self, fg_color="transparent")
-        self.center_container.pack(expand=True, pady=20)
+        # Título ajustado a la izquierda
+        self.title_label = ctk.CTkLabel(self, text="Configuración del Sandbox", font=ctk.CTkFont(size=24, weight="bold"))
+        self.title_label.pack(anchor="w", padx=20, pady=(20, 30))
 
-        # Título centrado
-        self.title_label = ctk.CTkLabel(self.center_container, text="Configuración del Sandbox", font=ctk.CTkFont(size=24, weight="bold"))
-        self.title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
+        # Contenedor principal para las dos columnas
+        self.content_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.content_frame.pack(fill="both", expand=True, padx=20)
+        self.content_frame.grid_columnconfigure(0, weight=1)
+        self.content_frame.grid_columnconfigure(1, weight=1)
 
-        # Variables de control (Editables)
+        # Columna Izquierda (Editables)
+        self.left_col = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self.left_col.grid(row=0, column=0, sticky="nsew", padx=(0, 20))
+
+        # Columna Derecha (Solo lectura)
+        self.right_col = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self.right_col.grid(row=0, column=1, sticky="nsew", padx=(20, 0))
+
+        # Variables de control
         self.vm_name_var = ctk.StringVar(value=config.VM_NAME)
         self.snapshot_name_var = ctk.StringVar(value=config.SNAPSHOT_NAME)
         self.guest_user_var = ctk.StringVar(value=config.GUEST_USER)
@@ -28,55 +38,59 @@ class ConfigView(ctk.CTkScrollableFrame):
         self.wait_malware_var = ctk.IntVar(value=config.WAIT_MALWARE_TIME)
         self.wait_write_var = ctk.IntVar(value=config.WAIT_WRITE_FILES_TIME)
 
-        # SECCIÓN EDITABLE
-        self.editable_title = ctk.CTkLabel(self.center_container, text="--- Parámetros Modificables ---", font=ctk.CTkFont(weight="bold"), text_color="lightgray")
-        self.editable_title.grid(row=1, column=0, columnspan=2, pady=(10, 5))
+        # --- SECCIÓN EDITABLE (Izquierda) ---
+        self.editable_title = ctk.CTkLabel(self.left_col, text="PARÁMETROS MODIFICABLES", font=ctk.CTkFont(size=14, weight="bold"), text_color="#3B8ED0")
+        self.editable_title.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 15))
 
-        self.create_entry("Nombre de la VM:", self.vm_name_var, 2)
-        self.create_entry("Usuario Guest:", self.guest_user_var, 3)
-        self.create_entry("Contraseña Guest:", self.guest_pass_var, 4) 
+        self.create_entry(self.left_col, "Nombre de la VM:", self.vm_name_var, 1)
+        self.create_entry(self.left_col, "Usuario Guest:", self.guest_user_var, 2)
+        self.create_entry(self.left_col, "Contraseña Guest:", self.guest_pass_var, 3) 
         
-        self.create_entry("Clave ZIP Malware:", self.compress_key_var, 5)
-        self.create_entry("Archivo ZIP:", self.zip_filename_var, 6)
-        self.create_entry("Payload (Ej: malware.exe):", self.payload_name_var, 7)
+        self.create_entry(self.left_col, "Clave ZIP Malware:", self.compress_key_var, 4)
+        self.create_entry(self.left_col, "Archivo ZIP:", self.zip_filename_var, 5)
+        self.create_entry(self.left_col, "Payload (Ej: malware.exe):", self.payload_name_var, 6)
 
-        self.create_entry("Espera Arranque VM (s):", self.wait_start_var, 8)
-        self.create_entry("Espera Análisis Malware (s):", self.wait_malware_var, 9)
-        self.create_entry("Espera Escritura Resultados (s):", self.wait_write_var, 10)
+        self.create_entry(self.left_col, "Espera Arranque VM (s):", self.wait_start_var, 7)
+        self.create_entry(self.left_col, "Espera Análisis Malware (s):", self.wait_malware_var, 8)
+        self.create_entry(self.left_col, "Espera Escritura Resultados (s):", self.wait_write_var, 9)
 
-        # SECCIÓN SOLO LECTURA
-        self.readonly_title = ctk.CTkLabel(self.center_container, text="--- Valores por defecto (Solo Lectura) ---", font=ctk.CTkFont(weight="bold"), text_color="lightgray")
-        self.readonly_title.grid(row=11, column=0, columnspan=2, pady=(20, 5))
+        # --- SECCIÓN SOLO LECTURA (Derecha) ---
+        self.readonly_title = ctk.CTkLabel(self.right_col, text="VALORES DEL SISTEMA (Solo Lectura)", font=ctk.CTkFont(size=14, weight="bold"), text_color="gray60")
+        self.readonly_title.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 15))
 
-        self.create_readonly_entry("Nombre del Snapshot a Detonar:", str(config.SNAPSHOT_NAME), 12)
-        self.create_readonly_entry("Directorio de Tools (Guest):", str(config.GUEST_TOOLS_DIR), 13)
-        self.create_readonly_entry("Directorio de Logs (Guest):", str(config.GUEST_LOG_DIR), 14)
-        self.create_readonly_entry("Directorio Malware (Host):", str(config.HOST_MALWARE_DIR), 15)
-        self.create_readonly_entry("Directorio Evidencia (Host):", str(config.HOST_EVIDENCE_DIR), 16)
-        self.create_readonly_entry("Firma de Tiempo Actual:", str(config.TIMESTAMP_SIGNATURE), 17)
+        self.create_readonly_entry(self.right_col, "Snapshot a Detonar:", str(config.SNAPSHOT_NAME), 1)
+        self.create_readonly_entry(self.right_col, "Dir. Tools (Guest):", str(config.GUEST_TOOLS_DIR), 2)
+        self.create_readonly_entry(self.right_col, "Dir. Logs (Guest):", str(config.GUEST_LOG_DIR), 3)
+        self.create_readonly_entry(self.right_col, "Dir. Malware (Host):", str(config.HOST_MALWARE_DIR), 4)
+        self.create_readonly_entry(self.right_col, "Dir. Evidencia (Host):", str(config.HOST_EVIDENCE_DIR), 5)
+        self.create_readonly_entry(self.right_col, "Firma de Tiempo Actual:", str(config.TIMESTAMP_SIGNATURE), 6)
 
-        # Botón Guardar
-        self.save_btn = ctk.CTkButton(self.center_container, text="Guardar Configuración", fg_color="green", hover_color="darkgreen", command=self.save_settings)
-        self.save_btn.grid(row=18, column=0, columnspan=2, pady=(30, 10))
+        # Contenedor para botones y estado (Parte inferior)
+        self.bottom_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.bottom_frame.pack(fill="x", padx=20, pady=30)
+
+        # Botón Guardar ajustado a la izquierda para seguir la línea visual
+        self.save_btn = ctk.CTkButton(self.bottom_frame, text="Guardar Configuración", font=ctk.CTkFont(weight="bold", size=14), height=40, fg_color="green", hover_color="darkgreen", command=self.save_settings)
+        self.save_btn.pack(side="left", pady=(10, 10))
         
-        self.status_label = ctk.CTkLabel(self.center_container, text="", text_color="green")
-        self.status_label.grid(row=19, column=0, columnspan=2)
+        self.status_label = ctk.CTkLabel(self.bottom_frame, text="", text_color="green", font=ctk.CTkFont(weight="bold"))
+        self.status_label.pack(side="left", padx=20, pady=(10, 10))
 
-    def create_entry(self, label_text, variable, row):
-        label = ctk.CTkLabel(self.center_container, text=label_text, font=ctk.CTkFont(weight="bold"))
-        label.grid(row=row, column=0, pady=5, padx=20, sticky="e")
+    def create_entry(self, parent, label_text, variable, row):
+        label = ctk.CTkLabel(parent, text=label_text, font=ctk.CTkFont(weight="bold"))
+        label.grid(row=row, column=0, pady=10, padx=(0, 15), sticky="w")
         
-        entry = ctk.CTkEntry(self.center_container, textvariable=variable, width=300)
-        entry.grid(row=row, column=1, pady=5, padx=20, sticky="w")
+        entry = ctk.CTkEntry(parent, textvariable=variable, width=250)
+        entry.grid(row=row, column=1, pady=10, sticky="w")
 
-    def create_readonly_entry(self, label_text, value, row):
-        label = ctk.CTkLabel(self.center_container, text=label_text, font=ctk.CTkFont(weight="bold"), text_color="gray")
-        label.grid(row=row, column=0, pady=5, padx=20, sticky="e")
+    def create_readonly_entry(self, parent, label_text, value, row):
+        label = ctk.CTkLabel(parent, text=label_text, font=ctk.CTkFont(weight="bold"), text_color="gray70")
+        label.grid(row=row, column=0, pady=10, padx=(0, 15), sticky="w")
         
-        entry = ctk.CTkEntry(self.center_container, width=300, fg_color="#2b2b2b", text_color="gray")
+        entry = ctk.CTkEntry(parent, width=250, fg_color="#2b2b2b", text_color="gray60")
         entry.insert(0, value)
         entry.configure(state="readonly")
-        entry.grid(row=row, column=1, pady=5, padx=20, sticky="w")
+        entry.grid(row=row, column=1, pady=10, sticky="w")
 
     def save_settings(self):
         updates = {
