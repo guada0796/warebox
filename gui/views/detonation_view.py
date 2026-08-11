@@ -44,25 +44,28 @@ class DetonationView(ctk.CTkFrame):
         elif self.zips:
             self.zip_combo.set(self.zips[0])
 
+        self.refresh_btn = ctk.CTkButton(self.setup_frame, text="↻", width=30, fg_color="gray", hover_color="darkgray", command=self.refresh_zips)
+        self.refresh_btn.grid(row=0, column=2, padx=(0, 10), pady=10, sticky="w")
+
         # Selección de extensión
         self.ext_label = ctk.CTkLabel(self.setup_frame, text="Extensión final:", font=ctk.CTkFont(weight="bold"))
-        self.ext_label.grid(row=0, column=2, padx=10, pady=10, sticky="e")
+        self.ext_label.grid(row=0, column=3, padx=10, pady=10, sticky="e")
         
         self.ext_combo = ctk.CTkComboBox(self.setup_frame, values=["exe", "dll", "bin", "vbs", "ps1", "bat"], width=100)
-        self.ext_combo.grid(row=0, column=3, padx=10, pady=10, sticky="w")
+        self.ext_combo.grid(row=0, column=4, padx=10, pady=10, sticky="w")
         
         # Opciones booleanas
         self.record_var = ctk.BooleanVar(value=False)
         self.record_switch = ctk.CTkSwitch(self.setup_frame, text="Grabar sesión", variable=self.record_var)
         self.record_switch.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="w")
         
-        self.auto_var = ctk.BooleanVar(value=True)
+        self.auto_var = ctk.BooleanVar(value=False)
         self.auto_switch = ctk.CTkSwitch(self.setup_frame, text="Detonación automática", variable=self.auto_var)
-        self.auto_switch.grid(row=1, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+        self.auto_switch.grid(row=1, column=3, columnspan=2, padx=10, pady=10, sticky="w")
 
         # Botón Iniciar
-        self.start_btn = ctk.CTkButton(self.setup_frame, text="¡INICIAR DETONACIÓN!", fg_color="darkred", hover_color="#8b0000", font=ctk.CTkFont(weight="bold"), command=self.start_detonation)
-        self.start_btn.grid(row=0, column=4, rowspan=2, padx=20, pady=10, sticky="nsew")
+        self.start_btn = ctk.CTkButton(self.setup_frame, text="¡INICIAR DETONACIÓN!", fg_color="green", hover_color="darkgreen", font=ctk.CTkFont(weight="bold"), command=self.start_detonation)
+        self.start_btn.grid(row=0, column=5, rowspan=2, padx=20, pady=10, sticky="nsew")
 
         # Consola Virtual
         self.console_label = ctk.CTkLabel(self, text="Logs del Sistema:", font=ctk.CTkFont(weight="bold"))
@@ -70,6 +73,16 @@ class DetonationView(ctk.CTkFrame):
 
         self.console_text = ctk.CTkTextbox(self, state="disabled", fg_color="black", text_color="green", font=ctk.CTkFont(family="Consolas", size=12))
         self.console_text.pack(fill="both", expand=True, padx=20, pady=(5, 20))
+
+    def refresh_zips(self):
+        self.zips = [f for f in os.listdir(config.HOST_MALWARE_DIR) if f.lower().endswith(".zip")] if os.path.exists(config.HOST_MALWARE_DIR) else []
+        self.zip_combo.configure(values=self.zips if self.zips else ["No hay muestras"])
+        if self.zips and config.ZIP_FILENAME in self.zips:
+            self.zip_combo.set(config.ZIP_FILENAME)
+        elif self.zips:
+            self.zip_combo.set(self.zips[0])
+        else:
+            self.zip_combo.set("No hay muestras")
 
     def start_detonation(self):
         # Deshabilitar UI
