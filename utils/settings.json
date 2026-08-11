@@ -1,0 +1,18 @@
+{
+    "VM_NAME": "W10PRO",
+    "SNAPSHOT_NAME": "warebox-v18",
+    "NETWORK_VM_NAME": "DEBIANET",
+    "NETWORK_SNAPSHOT_NAME": "fake-network-v3",
+    "GUEST_USER": "ucjc",
+    "GUEST_PASS": "ucjc",
+    "NETWORK_GUEST_USER": "ucjc",
+    "NETWORK_GUEST_PASS": "ucjc",
+    "COMPRESS_KEY": "infected",
+    "ZIP_FILENAME": "rufus.zip",
+    "PAYLOAD_NAME": "rufus.exe",
+    "PAYLOAD_SHA256": "9fcad316c82ba3d0c3130c9f43fb0fe147e9eb62e1bf830716a0bbb6c58d24ee",
+    "WAIT_START_TIME": 25,
+    "WAIT_MALWARE_TIME": 10,
+    "WAIT_WRITE_FILES_TIME": 10,
+    "TIMESTAMP_SIGNATURE": "20260807_081752"
+}

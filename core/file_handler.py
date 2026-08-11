@@ -72,25 +72,21 @@ def setSHA256(payload_path):
 
 def update_config_file(updates):
     """
-    Lee el archivo config.py, actualiza las claves especificadas y lo reescribe.
+    Actualiza el archivo settings.json y recarga el módulo config.
     """
-    config_path = "utils/config.py"
-    lines = []
-    with open(config_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
+    import json
+    settings_path = Path("utils/settings.json")
+    
+    if settings_path.exists():
+        with open(settings_path, 'r', encoding='utf-8') as f:
+            current_settings = json.load(f)
+    else:
+        current_settings = {}
 
-    with open(config_path, 'w', encoding='utf-8') as f:
-        for line in lines:
-            found_key = next((key for key in updates if line.strip().startswith(key)), None)
-            
-            if found_key:
-                new_value = updates[found_key]
-                if isinstance(new_value, str):
-                    f.write(f"{found_key} = \"{new_value}\"\n")
-                else: # Para números
-                    f.write(f"{found_key} = {new_value}\n")
-            else:
-                f.write(line)
+    current_settings.update(updates)
+
+    with open(settings_path, 'w', encoding='utf-8') as f:
+        json.dump(current_settings, f, indent=4)
     
     importlib.reload(config)
 

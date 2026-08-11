@@ -3,27 +3,37 @@
 Archivo de configuración central para el proyecto WAREBOX.
 """
 from pathlib import Path
+import json
 
 # --- Nombre del Aplicativo ---
 PROJECT_NAME = "WAREBOX"
 
+SETTINGS_FILE = Path(__file__).resolve().parent / "settings.json"
+
+def load_settings():
+    if SETTINGS_FILE.exists():
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+_settings = load_settings()
+
 # --- Configuración de las Máquinas Virtuales ---
-VM_NAME = "W10PRO"
-SNAPSHOT_NAME = "warebox-v18"
-NETWORK_VM_NAME = "DEBIANET"
-NETWORK_SNAPSHOT_NAME = "fake-network-v3"
+VM_NAME = _settings.get("VM_NAME", "W10PRO")
+SNAPSHOT_NAME = _settings.get("SNAPSHOT_NAME", "warebox-v18")
+NETWORK_VM_NAME = _settings.get("NETWORK_VM_NAME", "DEBIANET")
+NETWORK_SNAPSHOT_NAME = _settings.get("NETWORK_SNAPSHOT_NAME", "fake-network-v3")
 
 # --- Credenciales del Guest (Windows) ---
-GUEST_USER = "ucjc"
-GUEST_PASS = "ucjc"
+GUEST_USER = _settings.get("GUEST_USER", "ucjc")
+GUEST_PASS = _settings.get("GUEST_PASS", "ucjc")
 
 # --- Credenciales del Guest (Debian) ---
-NETWORK_GUEST_USER = "ucjc"
-NETWORK_GUEST_PASS = "ucjc"
+NETWORK_GUEST_USER = _settings.get("NETWORK_GUEST_USER", "ucjc")
+NETWORK_GUEST_PASS = _settings.get("NETWORK_GUEST_PASS", "ucjc")
 
 # --- Rutas de Herramientas en el Guest ---
 GUEST_TOOLS_DIR = "C:\\Tools"
-#GUEST_PAYLOAD_PATH_TEMPLATE = f"{GUEST_TOOLS_DIR}\\{{payload_name}}"
 GUEST_PAYLOAD_PATH_TEMPLATE = f"C:\\Users\\{GUEST_USER}\\Desktop\\{{payload_name}}"
 GUEST_PROCMON_PATH = f"{GUEST_TOOLS_DIR}\\Procmon.exe"
 GUEST_POWERSHELL_PATH = f"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
@@ -53,20 +63,17 @@ ENABLE_PROCMON = False
 ENABLE_SURICATA = False
 
 # --- Clave para descomprimir archivos ---
-COMPRESS_KEY = "infected"
+COMPRESS_KEY = _settings.get("COMPRESS_KEY", "infected")
 
 # --- Muestra a Analizar ---
-ZIP_FILENAME = "rufus.zip"
-PAYLOAD_NAME = "rufus.exe"
-PAYLOAD_SHA256 = "9fcad316c82ba3d0c3130c9f43fb0fe147e9eb62e1bf830716a0bbb6c58d24ee"
+ZIP_FILENAME = _settings.get("ZIP_FILENAME", "rufus.zip")
+PAYLOAD_NAME = _settings.get("PAYLOAD_NAME", "rufus.exe")
+PAYLOAD_SHA256 = _settings.get("PAYLOAD_SHA256", "9fcad316c82ba3d0c3130c9f43fb0fe147e9eb62e1bf830716a0bbb6c58d24ee")
 
-# --- Tiempo de espera en segundos para que arranque la VM --
-WAIT_START_TIME = 30
-# --- Tiempo de espera en segundos para que actúe el malware --
-WAIT_MALWARE_TIME = 10
-# --- Tiempo de espera en segundos para que se escriban los resultados --
-WAIT_WRITE_FILES_TIME = 10
+# --- Tiempos de espera ---
+WAIT_START_TIME = _settings.get("WAIT_START_TIME", 30)
+WAIT_MALWARE_TIME = _settings.get("WAIT_MALWARE_TIME", 10)
+WAIT_WRITE_FILES_TIME = _settings.get("WAIT_WRITE_FILES_TIME", 10)
 
-# --- Firma de tiempo que sirve para nombrar los resultados
-TIMESTAMP_SIGNATURE = "20260805_233108"
-#sudo tcpdump -i enp0s3 -n -w /home/ucjc/captura_malware.pcap
+# --- Firma de tiempo ---
+TIMESTAMP_SIGNATURE = _settings.get("TIMESTAMP_SIGNATURE", "20260805_233108")
