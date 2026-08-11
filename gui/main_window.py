@@ -1,5 +1,10 @@
 import customtkinter as ctk
 
+from gui.views.dashboard_view import DashboardView
+from gui.views.detonation_view import DetonationView
+from gui.views.snapshot_view import SnapshotView
+from gui.views.config_view import ConfigView
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -38,35 +43,39 @@ class App(ctk.CTk):
         self.main_frame = ctk.CTkFrame(self, corner_radius=10)
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         
+        # Instanciar las vistas una sola vez
+        self.views = {
+            "dashboard": DashboardView(self.main_frame, self.show_detonation, fg_color="transparent"),
+            "detonation": DetonationView(self.main_frame, fg_color="transparent"),
+            "snapshots": SnapshotView(self.main_frame, fg_color="transparent"),
+            "config": ConfigView(self.main_frame, fg_color="transparent")
+        }
+        
         self.current_frame = None
         self.show_dashboard()
 
-    def _clear_main_frame(self):
+    def _hide_current_frame(self):
         if self.current_frame is not None:
-            self.current_frame.destroy()
+            self.current_frame.pack_forget()
 
     def show_dashboard(self):
-        self._clear_main_frame()
-        from gui.views.dashboard_view import DashboardView
-        self.current_frame = DashboardView(self.main_frame, self.show_detonation, fg_color="transparent")
+        self._hide_current_frame()
+        self.current_frame = self.views["dashboard"]
         self.current_frame.pack(fill="both", expand=True)
 
     def show_detonation(self):
-        self._clear_main_frame()
-        from gui.views.detonation_view import DetonationView
-        self.current_frame = DetonationView(self.main_frame, fg_color="transparent")
+        self._hide_current_frame()
+        self.current_frame = self.views["detonation"]
         self.current_frame.pack(fill="both", expand=True)
 
     def show_snapshots(self):
-        self._clear_main_frame()
-        from gui.views.snapshot_view import SnapshotView
-        self.current_frame = SnapshotView(self.main_frame, fg_color="transparent")
+        self._hide_current_frame()
+        self.current_frame = self.views["snapshots"]
         self.current_frame.pack(fill="both", expand=True)
 
     def show_config(self):
-        self._clear_main_frame()
-        from gui.views.config_view import ConfigView
-        self.current_frame = ConfigView(self.main_frame, fg_color="transparent")
+        self._hide_current_frame()
+        self.current_frame = self.views["config"]
         self.current_frame.pack(fill="both", expand=True)
 
 if __name__ == "__main__":

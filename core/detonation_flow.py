@@ -8,48 +8,78 @@ from services import vbox_manager as vbox, procmon_wrapper as procmon, sysmon_wr
 from core import file_handler as file
 from services import tcpdump_wrapper as tcpw
 
-def run_analysis(record=False, auto_detonation=False):
+class AbortAnalysisError(Exception):
+    pass
+
+def check_abort(abort_event):
+    if abort_event and abort_event.is_set():
+        raise AbortAnalysisError("Análisis abortado por el usuario.")
+
+def wait_or_abort(seconds, abort_event):
+    if abort_event:
+        if abort_event.wait(seconds):
+            raise AbortAnalysisError("Análisis abortado por el usuario.")
+    else:
+        time.sleep(seconds)
+
+def run_analysis(record=False, auto_detonation=False, manual_wait_callback=None, manual_event=None, abort_event=None):
     """Ejecuta el flujo completo de análisis de una muestra."""
     cli_utils.clear_screen()
     msg.title("Detonación de Malware - WAREBOX")
 
-    file.setSignature()
+    try:
+        check_abort(abort_event)
+        file.setSignature()
 
-    #Crea el directorio de evidencia si no existe
-    config.HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
+        #Crea el directorio de evidencia si no existe
+        config.HOST_EVIDENCE_DIR.mkdir(exist_ok=True)
 
-    payload_path = decompress_malware()
+        payload_path = decompress_malware()
 
-    start_vms()
+        check_abort(abort_event)
+        start_vms(abort_event)
 
-    start_tcpdump()
+        check_abort(abort_event)
+        start_tcpdump()
 
-    if config.ENABLE_PROCMON:
-        start_procmon()
+        if config.ENABLE_PROCMON:
+            check_abort(abort_event)
+            start_procmon()
 
-    if record:
-        start_recording()
+        if record:
+            check_abort(abort_event)
+            start_recording()
 
-    detonation(payload_path, auto_detonation)
+        check_abort(abort_event)
+        detonation(payload_path, auto_detonation, manual_wait_callback, manual_event, abort_event)
 
-    if record:
-        stop_recording()
+        if record:
+            check_abort(abort_event)
+            stop_recording()
 
-    if config.ENABLE_PROCMON:
-        stop_procmon()
-        copy_procmon_log()
+        if config.ENABLE_PROCMON:
+            check_abort(abort_event)
+            stop_procmon(abort_event)
+            check_abort(abort_event)
+            copy_procmon_log()
 
-    copy_sysmon_log()
+        check_abort(abort_event)
+        copy_sysmon_log()
 
-    stop_tcpdump()
+        check_abort(abort_event)
+        stop_tcpdump()
 
-    copy_tcpdump_log()
-    
-    stop_sandbox()
-    msg.line_break(2)
-    msg.finishing("¡Análisis del malware completado!")
-    msg.info(f"Los archivos de evidencia se encuentran en: {config.HOST_EVIDENCE_DIR}")
-    msg.wait_key()
+        check_abort(abort_event)
+        copy_tcpdump_log()
+        
+        stop_sandbox()
+        msg.line_break(2)
+        msg.finishing("¡Análisis del malware completado!")
+        msg.info(f"Los archivos de evidencia se encuentran en: {config.HOST_EVIDENCE_DIR}")
+        
+    except AbortAnalysisError:
+        # Silently caught, the view handles the abort message
+        raise
 
 def decompress_malware():
     #Descomprime la muestra en el host para luego copiarla a la VM
@@ -61,7 +91,7 @@ def decompress_malware():
     file.setSHA256(payload_path)
     return payload_path
 
-def start_vms():
+def start_vms(abort_event=None):
     """ Función que arranca las máquinas virtuales necesarias"""
     #Arrancar la VM de DEBIAN
     if not vbox.restore_start_vm(config.NETWORK_VM_NAME, config.NETWORK_SNAPSHOT_NAME): return
@@ -71,7 +101,7 @@ def start_vms():
     if not vbox.restore_start_vm_gui(config.VM_NAME, config.SNAPSHOT_NAME): return
     msg.starting(f"Se ha iniciado la máquina sandbox principal")
     msg.waiting(f"Esperando {config.WAIT_START_TIME} segundos para el arranque completo")
-    time.sleep(config.WAIT_START_TIME)
+    wait_or_abort(config.WAIT_START_TIME, abort_event)
 
 def start_tcpdump():
     tcpw.start_tcpdump(config.NETWORK_VM_NAME, config.NETWORK_GUEST_USER, config.NETWORK_GUEST_PASS, 10000)
@@ -91,7 +121,7 @@ def start_procmon():
         stop_sandbox()
         return
     
-def detonation(payload_path, auto_detonation):
+def detonation(payload_path, auto_detonation, manual_wait_callback=None, manual_event=None, abort_event=None):
     # Despliegue y Detonación
     guest_payload_path = config.GUEST_PAYLOAD_PATH_TEMPLATE.format(payload_name=config.PAYLOAD_NAME)
     if not file.copy_to_guest(payload_path, guest_payload_path):
@@ -105,24 +135,33 @@ def detonation(payload_path, auto_detonation):
             msg.warning("La detonación del payload podría haber fallado, se procederá a recolectar los logs")
 
         msg.waiting(f"Esperando {config.WAIT_MALWARE_TIME} segundos para que el malware actúe")
-        time.sleep(config.WAIT_MALWARE_TIME)
+        wait_or_abort(config.WAIT_MALWARE_TIME, abort_event)
 
     else:
         msg.line_break(1)
         msg.separation_specific_line("virus")
-        print("La muestra se encuentra en el Escritorio de la VM, ejecute y realice las pruebas." \
-            "\nCuando haya terminado vuelva a este terminal y presione cualquier tecla para continuar.")
-        msg.separation_specific_line("virus")
-        msg.wait_key()
+        print("La muestra se encuentra en el Escritorio de la VM, ejecute y realice las pruebas.")
+        if manual_wait_callback and manual_event:
+            print("Cuando haya terminado presione el botón 'CONTINUAR ANÁLISIS' en la interfaz.")
+            msg.separation_specific_line("virus")
+            manual_wait_callback()
+            # Wait for manual event OR abort event
+            while not manual_event.is_set():
+                check_abort(abort_event)
+                manual_event.wait(timeout=1.0)
+            check_abort(abort_event)
+        else:
+            print("Advertencia: No se proporcionó evento de continuación. El flujo continuará inmediatamente.")
+            msg.separation_specific_line("virus")
 
-def stop_procmon():
+def stop_procmon(abort_event=None):
     # Detener Monitoreo
     if not procmon.stop_capture():
         stop_sandbox()
         return
 
     msg.waiting(f"Esperando {config.WAIT_WRITE_FILES_TIME} segundos para que los archivos de log se escriban")
-    time.sleep(config.WAIT_WRITE_FILES_TIME)
+    wait_or_abort(config.WAIT_WRITE_FILES_TIME, abort_event)
 
 def copy_procmon_log():
     if not file.copy_from_guest(config.VM_NAME, config.GUEST_USER, config.GUEST_PASS, config.GUEST_PROCMON_LOG, config.HOST_EVIDENCE_DIR):
