@@ -64,3 +64,30 @@ def list_snapshots():
              msg.warning("No se encontraron snapshots para esta VM")
         else:
             msg.error(f"Error al buscar los snapshots: {e.stderr.strip()}")
+
+# --- Nuevas funciones para la GUI ---
+
+def get_snapshots_list():
+    """Obtiene una lista de nombres de snapshots programáticamente."""
+    import re
+    command = ["VBoxManage", "snapshot", config.VM_NAME, "list"]
+    snapshots = []
+    try:
+        result = subprocess.run(command, check=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
+        if result.stdout:
+            for line in result.stdout.split('\n'):
+                match = re.search(r'Name:\s+(.+?)\s+\(', line)
+                if match:
+                    snapshots.append(match.group(1).strip())
+    except subprocess.CalledProcessError:
+        pass
+    return snapshots
+
+def create_snapshot_silent(name):
+    """Crea un snapshot de manera silenciosa devolviendo True/False."""
+    command = ["VBoxManage", "snapshot", config.VM_NAME, "take", name]
+    try:
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding='utf-8')
+        return True
+    except subprocess.CalledProcessError:
+        return False

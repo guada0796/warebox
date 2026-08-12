@@ -7,7 +7,10 @@ from pathlib import Path
 
 from utils import config
 from core import file_handler as file
+from core import manual_analyzer
 from services import report_generator
+from services import snapshot_manager
+from services import vbox_manager as vbox
 from gui import custom_messagebox as messagebox
 from services import hayabusa_wrapper as hayabusa
 from services import suricata_wrapper as suricata
@@ -17,21 +20,29 @@ class AnalysisView(ctk.CTkFrame):
         super().__init__(master, **kwargs)
         self.resultados_actuales = None
         self.pdf_generado_path = None
+        self.current_manual_snap_context = None
 
-        self.title_label = ctk.CTkLabel(self, text="Análisis de Resultados", font=ctk.CTkFont(size=24, weight="bold"))
+        self.title_label = ctk.CTkLabel(self, text="Panel de Análisis", font=ctk.CTkFont(size=24, weight="bold"))
         self.title_label.pack(pady=(20, 10), padx=20, anchor="w")
 
+        # --- Tabview Principal ---
+        self.tabview = ctk.CTkTabview(self)
+        self.tabview.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        
+        self.tab_auto = self.tabview.add("⚡ Análisis Automático")
+        self.tab_manual = self.tabview.add("🛠 Análisis Manual")
+
+        self._build_auto_tab()
+        self._build_manual_tab()
+
+    def _build_auto_tab(self):
         # --- Controles Superiores ---
-        self.controls_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.controls_frame = ctk.CTkFrame(self.tab_auto, fg_color="transparent")
         self.controls_frame.pack(fill="x", padx=20, pady=10)
 
-        self.btn_auto = ctk.CTkButton(self.controls_frame, text="⚡ Análisis Automático (Endpoint + Red)", font=ctk.CTkFont(weight="bold", size=14),
+        self.btn_auto = ctk.CTkButton(self.controls_frame, text="⚡ Iniciar Escaneo (Endpoint + Red)", font=ctk.CTkFont(weight="bold", size=14),
                                       fg_color="#006400", hover_color="#004d00", height=40, command=self.start_auto_analysis)
         self.btn_auto.pack(side="left", padx=(0, 10))
-
-        self.btn_manual = ctk.CTkButton(self.controls_frame, text="🛠 Análisis Manual", font=ctk.CTkFont(weight="bold", size=14),
-                                        fg_color="#8b8000", hover_color="#665c00", height=40, command=self.start_manual_analysis)
-        self.btn_manual.pack(side="left", padx=10)
 
         self.btn_clear = ctk.CTkButton(self.controls_frame, text="🗑 Limpiar", font=ctk.CTkFont(weight="bold", size=14),
                                         fg_color="#8b0000", hover_color="#5c0000", height=40, width=100, command=self.clear_all_results)
@@ -49,8 +60,8 @@ class AnalysisView(ctk.CTkFrame):
                                      fg_color="#1f538d", hover_color="#14375d", height=40, width=130, state="disabled", command=self.generate_pdf)
         self.btn_pdf.pack(side="right", padx=(0, 10))
 
-        # --- Panel de Información (Nuevo) ---
-        self.info_frame = ctk.CTkFrame(self, fg_color="transparent")
+        # --- Panel de Información ---
+        self.info_frame = ctk.CTkFrame(self.tab_auto, fg_color="transparent")
         self.info_frame.pack(fill="x", padx=20, pady=(0, 5))
         
         self.lbl_info_file = ctk.CTkLabel(self.info_frame, text="Archivo en análisis: Ninguno", text_color="gray", font=ctk.CTkFont(size=12))
@@ -63,7 +74,7 @@ class AnalysisView(ctk.CTkFrame):
         self.lbl_info_path.pack(side="left", padx=10)
 
         # --- Configuración de Reglas (Hayabusa) ---
-        self.rules_frame = ctk.CTkFrame(self)
+        self.rules_frame = ctk.CTkFrame(self.tab_auto)
         self.rules_frame.pack(fill="x", padx=20, pady=(0, 10))
 
         ctk.CTkLabel(self.rules_frame, text="Configuración de Reglas Hayabusa:", font=ctk.CTkFont(weight="bold")).grid(row=0, column=0, padx=10, pady=10)
@@ -89,26 +100,185 @@ class AnalysisView(ctk.CTkFrame):
         self.chk_sysmon.grid(row=0, column=5, padx=10, pady=10)
 
         # --- Área de Progreso y Mensajes ---
-        self.status_label = ctk.CTkLabel(self, text="Preparado para iniciar análisis.", text_color="gray", font=ctk.CTkFont(size=14))
+        self.status_label = ctk.CTkLabel(self.tab_auto, text="Preparado para iniciar análisis.", text_color="gray", font=ctk.CTkFont(size=14))
         self.status_label.pack(pady=5)
         
-        self.progress_bar = ctk.CTkProgressBar(self, orientation="horizontal", mode="indeterminate")
+        self.progress_bar = ctk.CTkProgressBar(self.tab_auto, orientation="horizontal", mode="indeterminate")
         self.progress_bar.pack(fill="x", padx=20, pady=(0, 10))
         self.progress_bar.set(0)
-        self.progress_bar.pack_forget() # Ocultar inicialmente
+        self.progress_bar.pack_forget()
 
         # --- Área de Resultados ---
-        self.results_frame = ctk.CTkScrollableFrame(self)
+        self.results_frame = ctk.CTkScrollableFrame(self.tab_auto)
         self.results_frame.pack(fill="both", expand=True, padx=20, pady=(10, 20))
 
+    def _build_manual_tab(self):
+        # Panel superior: Acciones para iniciar
+        actions_frame = ctk.CTkFrame(self.tab_manual, fg_color="transparent")
+        actions_frame.pack(fill="x", padx=20, pady=20)
+
+        # Nuevo análisis
+        new_analysis_frame = ctk.CTkFrame(actions_frame)
+        new_analysis_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+
+        ctk.CTkLabel(new_analysis_frame, text="Iniciar Análisis Limpio", font=ctk.CTkFont(weight="bold", size=16)).pack(pady=(15, 5))
+        ctk.CTkLabel(new_analysis_frame, text="Restaura la VM y copia las evidencias de la última detonación.", text_color="gray", wraplength=300).pack(pady=(0, 15))
+        self.btn_new_manual = ctk.CTkButton(new_analysis_frame, text="🚀 Iniciar Nuevo Análisis", font=ctk.CTkFont(weight="bold"), fg_color="#1f538d", hover_color="#14375d", height=40, command=self.start_new_manual_analysis)
+        self.btn_new_manual.pack(pady=(0, 15), padx=20)
+
+        # Continuar análisis
+        restore_analysis_frame = ctk.CTkFrame(actions_frame)
+        restore_analysis_frame.pack(side="left", fill="both", expand=True, padx=(10, 0))
+
+        ctk.CTkLabel(restore_analysis_frame, text="Continuar Análisis Guardado", font=ctk.CTkFont(weight="bold", size=16)).pack(pady=(15, 5))
+        ctk.CTkLabel(restore_analysis_frame, text="Restaura un snapshot de un análisis previo.", text_color="gray", wraplength=300).pack(pady=(0, 15))
+        
+        self.combo_snapshots = ctk.CTkComboBox(restore_analysis_frame, values=[], width=250)
+        self.combo_snapshots.pack(pady=(0, 10), padx=20)
+        
+        self.btn_refresh_snaps = ctk.CTkButton(restore_analysis_frame, text="🔄 Refrescar", width=100, command=self.refresh_snapshots)
+        self.btn_refresh_snaps.pack(pady=(0, 15))
+        
+        self.btn_restore_manual = ctk.CTkButton(restore_analysis_frame, text="📂 Restaurar Análisis", font=ctk.CTkFont(weight="bold"), fg_color="#006400", hover_color="#004d00", height=40, command=self.start_restore_manual_analysis)
+        self.btn_restore_manual.pack(pady=(0, 15), padx=20)
+
+        # Control de Estado
+        status_frame = ctk.CTkFrame(self.tab_manual)
+        status_frame.pack(fill="x", padx=20, pady=20)
+
+        self.manual_status_label = ctk.CTkLabel(status_frame, text="Estado: VM Apagada.", text_color="gray", font=ctk.CTkFont(size=14, weight="bold"))
+        self.manual_status_label.pack(pady=15)
+        
+        self.manual_progress_bar = ctk.CTkProgressBar(status_frame, orientation="horizontal", mode="indeterminate")
+        self.manual_progress_bar.pack(fill="x", padx=40, pady=(0, 15))
+        self.manual_progress_bar.set(0)
+        self.manual_progress_bar.pack_forget()
+
+        self.btn_finish_manual = ctk.CTkButton(status_frame, text="🛑 Finalizar Análisis en curso", font=ctk.CTkFont(weight="bold", size=14), fg_color="#8b0000", hover_color="#5c0000", height=45, state="disabled", command=self.finish_manual_analysis)
+        self.btn_finish_manual.pack(pady=(0, 15), padx=20)
+
+        # Cargar snapshots iniciales
+        self.refresh_snapshots()
+
+    # --- Lógica de la pestaña Manual ---
+    def refresh_snapshots(self):
+        snapshots = snapshot_manager.get_snapshots_list()
+        if snapshots:
+            self.combo_snapshots.configure(values=snapshots)
+            self.combo_snapshots.set(snapshots[0])
+        else:
+            self.combo_snapshots.configure(values=["No hay snapshots"])
+            self.combo_snapshots.set("No hay snapshots")
+
+    def _set_manual_ui_state(self, state):
+        btn_state = "normal" if state == "normal" else "disabled"
+        self.btn_new_manual.configure(state=btn_state)
+        self.btn_restore_manual.configure(state=btn_state)
+        self.btn_refresh_snaps.configure(state=btn_state)
+        self.combo_snapshots.configure(state=btn_state)
+
+    def _update_manual_status(self, message, color="white"):
+        self.after(0, lambda: self.manual_status_label.configure(text=f"Estado: {message}", text_color=color))
+
+    def start_new_manual_analysis(self):
+        self.current_manual_snap_context = "NEW"
+        self._set_manual_ui_state("disabled")
+        self.manual_progress_bar.pack(fill="x", padx=40, pady=(0, 15))
+        self.manual_progress_bar.start()
+        
+        threading.Thread(target=self._new_manual_worker, daemon=True).start()
+
+    def _new_manual_worker(self):
+        success = manual_analyzer.setup_new_analysis(status_callback=self._update_manual_status)
+        self.after(0, self.manual_progress_bar.stop)
+        self.after(0, self.manual_progress_bar.pack_forget)
+        
+        if success:
+            self._update_manual_status("Análisis en progreso. Por favor, trabaja en la Máquina Virtual.", "#00ff00")
+            self.after(0, lambda: self.btn_finish_manual.configure(state="normal"))
+        else:
+            self.after(0, lambda: self._set_manual_ui_state("normal"))
+
+    def start_restore_manual_analysis(self):
+        snap = self.combo_snapshots.get()
+        if not snap or snap == "No hay snapshots":
+            messagebox.showerror("Error", "Selecciona un snapshot válido.", master=self)
+            return
+            
+        self.current_manual_snap_context = snap
+        self._set_manual_ui_state("disabled")
+        self.manual_progress_bar.pack(fill="x", padx=40, pady=(0, 15))
+        self.manual_progress_bar.start()
+        
+        threading.Thread(target=self._restore_manual_worker, args=(snap,), daemon=True).start()
+
+    def _restore_manual_worker(self, snap):
+        success = manual_analyzer.restore_analysis(snap, status_callback=self._update_manual_status)
+        self.after(0, self.manual_progress_bar.stop)
+        self.after(0, self.manual_progress_bar.pack_forget)
+        
+        if success:
+            self._update_manual_status("Análisis restaurado en progreso. Por favor, trabaja en la Máquina Virtual.", "#00ff00")
+            self.after(0, lambda: self.btn_finish_manual.configure(state="normal"))
+        else:
+            self.after(0, lambda: self._set_manual_ui_state("normal"))
+
+    def finish_manual_analysis(self):
+        save = messagebox.askyesno("Guardar Análisis", "¿Deseas guardar el estado actual de tu análisis como un nuevo snapshot antes de apagar?", master=self)
+        
+        snap_name_to_save = None
+        if save:
+            if self.current_manual_snap_context == "NEW":
+                dialog = ctk.CTkInputDialog(text="Introduce un nombre corto para identificar este análisis (ej. Malware_X):", title="Nombre del Análisis")
+                base_name = dialog.get_input()
+                if not base_name:
+                    base_name = "Analisis_Manual"
+                else:
+                    base_name = base_name.strip().replace(' ', '_')
+                
+                # Concatenar firma de tiempo actual
+                snap_name_to_save = f"{base_name}_{config.TIMESTAMP_SIGNATURE}"
+            else:
+                original_name = self.current_manual_snap_context
+                import re
+                match = re.search(r'_v(\d+)$', original_name)
+                if match:
+                    v_num = int(match.group(1)) + 1
+                    snap_name_to_save = re.sub(r'_v\d+$', f'_v{v_num}', original_name)
+                else:
+                    snap_name_to_save = f"{original_name}_v2"
+
+        self.btn_finish_manual.configure(state="disabled")
+        self._update_manual_status("Finalizando análisis...", "yellow")
+        self.manual_progress_bar.pack(fill="x", padx=40, pady=(0, 15))
+        self.manual_progress_bar.start()
+
+        def _finish_worker():
+            if save and snap_name_to_save:
+                self._update_manual_status(f"Guardando snapshot '{snap_name_to_save}'...", "yellow")
+                if not snapshot_manager.create_snapshot_silent(snap_name_to_save):
+                    self.after(0, lambda: messagebox.showerror("Error", "No se pudo guardar el snapshot.", master=self))
+
+            self._update_manual_status("Apagando la Máquina Virtual...", "yellow")
+            vbox.stop_vm(config.VM_NAME)
+            
+            self.after(0, self.manual_progress_bar.stop)
+            self.after(0, self.manual_progress_bar.pack_forget)
+            self._update_manual_status("VM Apagada. Análisis finalizado.", "gray")
+            self.after(0, lambda: self._set_manual_ui_state("normal"))
+            self.after(0, self.refresh_snapshots)
+            self.current_manual_snap_context = None
+
+        threading.Thread(target=_finish_worker, daemon=True).start()
+
+    # --- Lógica de la pestaña Automático ---
     def clear_results(self):
         for widget in self.results_frame.winfo_children():
             widget.destroy()
 
-    def set_ui_state(self, state):
+    def set_auto_ui_state(self, state):
         btn_state = "normal" if state == "normal" else "disabled"
         self.btn_auto.configure(state=btn_state)
-        self.btn_manual.configure(state=btn_state)
         self.btn_clear.configure(state=btn_state)
         self.btn_open_folder.configure(state=btn_state)
         self.profile_combo.configure(state=btn_state)
@@ -146,9 +316,6 @@ class AnalysisView(ctk.CTkFrame):
         else:
             messagebox.showwarning("No Encontrado", "El archivo PDF ya no se encuentra en el disco.", master=self)
 
-    def start_manual_analysis(self):
-        messagebox.showinfo("Próximamente", "La interfaz de análisis manual está en desarrollo. ¡Pronto estará disponible!", master=self)
-
     def start_auto_analysis(self):
         evtx_path = file.get_timestamp_signature_file_name(config.HOST_SYSMON_LOG_DIR)
         if evtx_path:
@@ -159,7 +326,7 @@ class AnalysisView(ctk.CTkFrame):
                 if not overwrite:
                     return
 
-        self.set_ui_state("disabled")
+        self.set_auto_ui_state("disabled")
         self.btn_pdf.configure(state="disabled")
         self.btn_open_pdf.configure(state="disabled")
         self.pdf_generado_path = None
@@ -191,7 +358,7 @@ class AnalysisView(ctk.CTkFrame):
 
         if not evtx_path:
             self._update_status("No se encontró archivo de eventos (.evtx) para análisis (endpoint).", "red")
-            self._finish_analysis()
+            self._finish_auto_analysis()
             return
 
         self._update_status("Analizando eventos del Endpoint con Inteligencia de Amenazas...", "yellow")
@@ -207,7 +374,7 @@ class AnalysisView(ctk.CTkFrame):
             )
         except Exception as e:
             self._update_status(f"Error en Hayabusa: {e}", "red")
-            self._finish_analysis()
+            self._finish_auto_analysis()
             return
 
         if config.ENABLE_SURICATA:
@@ -237,15 +404,15 @@ class AnalysisView(ctk.CTkFrame):
         self._update_status("Análisis Automático completado exitosamente.", "green")
         
         self.after(0, lambda: self.btn_pdf.configure(state="normal"))
-        self._finish_analysis()
+        self._finish_auto_analysis()
 
     def _update_status(self, message, color):
         self.after(0, lambda m=message, c=color: self.status_label.configure(text=m, text_color=c))
 
-    def _finish_analysis(self):
+    def _finish_auto_analysis(self):
         self.after(0, self.progress_bar.stop)
         self.after(0, self.progress_bar.pack_forget)
-        self.after(0, lambda: self.set_ui_state("normal"))
+        self.after(0, lambda: self.set_auto_ui_state("normal"))
 
     def _display_results(self, resultados):
         if not resultados:
