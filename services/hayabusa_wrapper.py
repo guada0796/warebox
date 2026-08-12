@@ -6,7 +6,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from utils import messages as msg, config
+from utils import config
 
 # Asegúrate de definir la ruta correcta a tu binario en utils/config.py
 from utils.config import HAYABUSA_BIN_PATH 
@@ -14,47 +14,43 @@ from utils.config import HAYABUSA_BIN_PATH
 # Importamos los diccionarios y el orden de MITRE desde nuestro nuevo archivo de configuración
 from utils.mitre_config import MITRE_MAPPING, MITRE_ORDER
 
-def analyze_evtx(evtx_path, output_dir):
+def analyze_evtx(evtx_path, output_dir, profile="super-verbose", include_deprecated=False, include_unsupported=False, include_noisy=False, include_sysmon=True):
     """
     Ejecuta Hayabusa en modo JSON y extrae la inteligencia estructurada.
     """
     evtx_file = Path(evtx_path)
     output_json = Path(output_dir) / f"{evtx_file.stem}_hayabusa.json"
 
-    # Validar si el archivo .json ya existe, preguntar por sobrescribir
+    # La GUI ya validó la sobrescritura, procedemos a eliminar silenciosamente si existe
     if output_json.exists():
-        overwrite = True if input(f"El archivo {output_json} ya existe. ¿Desea sobrescribirlo? (s/N): ").lower() == 's' else False
-        if not overwrite:
-            msg.line_break(1)
-            msg.info("Análisis cancelado por el usuario.")
-            return None
-        
-        # Eliminar el archivo existente antes de ejecutar Hayabusa
         try:
             output_json.unlink()
-            msg.info(f"Archivo existente {output_json} eliminado.")
         except Exception as e:
-            msg.error(f"No se pudo eliminar el archivo existente: {e}")
-            return None
+            raise RuntimeError(f"No se pudo eliminar el archivo existente: {e}")
 
     comando = [
         str(HAYABUSA_BIN_PATH), "json-timeline",
         "-f", str(evtx_file),
         "-o", str(output_json),
-        "--profile", "super-verbose"  
+        "-w", "-q",
+        "--profile", profile  
     ]
-
-    msg.processing(f"Ejecutando motor de reglas Sigma (Hayabusa) sobre {evtx_file.name}...")
     
+    if include_deprecated:
+        comando.append("-D")
+    if include_unsupported:
+        comando.append("-u")
+    if include_noisy:
+        comando.append("-n")
+    if not include_sysmon:
+        comando.append("-E") # Excluir reglas de sysmon si el usuario lo desactiva
+
     try:
-        subprocess.run(comando, check=True)
-        msg.info("Análisis de Hayabusa completado")
-        
+        subprocess.run(comando, capture_output=True, text=True, check=True)
         return _parse_results(output_json)
         
     except subprocess.CalledProcessError as e:
-        msg.error(f"Fallo al ejecutar Hayabusa (Código de salida: {e.returncode})")
-        return None
+        raise RuntimeError(f"Fallo al ejecutar Hayabusa (Código de salida: {e.returncode})\nError: {e.stderr}")
 
 def _parse_results(json_path):
     """
@@ -78,7 +74,6 @@ def _parse_results(json_path):
         # Si recibimos la hora de inicio de la detonación, se la pasamos a Hayabusa
         signature = datetime.strptime(config.TIMESTAMP_SIGNATURE, "%Y%m%d_%H%M%S")
         start_time = signature.strftime("%Y-%m-%d %H:%M:%S")
-        msg.info(f"Aplicando filtro temporal. Analizando eventos a partir de: {start_time}")
 
         while posicion < longitud:
             while posicion < longitud and contenido[posicion].isspace():
@@ -172,5 +167,4 @@ def _parse_results(json_path):
         return resumen
 
     except Exception as e:
-        msg.error(f"Error parseando resultados de Hayabusa: {e}")
-        return None
+        raise RuntimeError(f"Error parseando resultados de Hayabusa: {e}")

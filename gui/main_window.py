@@ -4,6 +4,7 @@ from gui.views.dashboard_view import DashboardView
 from gui.views.detonation_view import DetonationView
 from gui.views.snapshot_view import SnapshotView
 from gui.views.config_view import ConfigView
+from gui.views.analysis_view import AnalysisView
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -33,7 +34,7 @@ class App(ctk.CTk):
         # --- Sidebar ---
         self.sidebar_frame = ctk.CTkFrame(self, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
-        self.sidebar_frame.grid_rowconfigure(6, weight=1) # Empuja el contenido hacia los extremos
+        self.sidebar_frame.grid_rowconfigure(7, weight=1) # Empuja el contenido hacia los extremos
 
         self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="WAREBOX", font=ctk.CTkFont(size=24, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
@@ -51,15 +52,18 @@ class App(ctk.CTk):
         self.btn_detonation = ctk.CTkButton(self.sidebar_frame, text="💣  Detonación", font=nav_font, fg_color="transparent", text_color="gray80", hover_color="gray25", anchor="w", command=self.show_detonation)
         self.btn_detonation.grid(row=3, column=0, padx=15, pady=5, sticky="ew")
 
+        self.btn_analysis = ctk.CTkButton(self.sidebar_frame, text="🔍  Análisis", font=nav_font, fg_color="transparent", text_color="gray80", hover_color="gray25", anchor="w", command=self.show_analysis)
+        self.btn_analysis.grid(row=4, column=0, padx=15, pady=5, sticky="ew")
+
         self.btn_snapshots = ctk.CTkButton(self.sidebar_frame, text="📸  Snapshots", font=nav_font, fg_color="transparent", text_color="gray80", hover_color="gray25", anchor="w", command=self.show_snapshots)
-        self.btn_snapshots.grid(row=4, column=0, padx=15, pady=5, sticky="ew")
+        self.btn_snapshots.grid(row=5, column=0, padx=15, pady=5, sticky="ew")
 
         self.btn_config = ctk.CTkButton(self.sidebar_frame, text="⚙️  Configuración", font=nav_font, fg_color="transparent", text_color="gray80", hover_color="gray25", anchor="w", command=self.show_config)
-        self.btn_config.grid(row=5, column=0, padx=15, pady=5, sticky="ew")
+        self.btn_config.grid(row=6, column=0, padx=15, pady=5, sticky="ew")
 
         # --- Resumen de Configuración (Sidebar Inferior) ---
         self.config_summary = ctk.CTkScrollableFrame(self.sidebar_frame, fg_color="#1a1a1a", corner_radius=5, width=300)
-        self.config_summary.grid(row=6, column=0, padx=15, pady=(20, 20), sticky="nsew")
+        self.config_summary.grid(row=7, column=0, padx=15, pady=(20, 20), sticky="nsew")
 
         self.summary_title = ctk.CTkLabel(self.config_summary, text="ESTADO DE CONFIGURACIÓN", font=ctk.CTkFont(size=11, weight="bold"), text_color="#d4af37")
         self.summary_title.pack(pady=(10, 15))
@@ -74,6 +78,7 @@ class App(ctk.CTk):
         self.views = {
             "dashboard": DashboardView(self.main_frame, self.show_detonation, fg_color="transparent"),
             "detonation": DetonationView(self.main_frame, fg_color="transparent"),
+            "analysis": AnalysisView(self.main_frame, fg_color="transparent"),
             "snapshots": SnapshotView(self.main_frame, fg_color="transparent"),
             "config": ConfigView(self.main_frame, fg_color="transparent")
         }
@@ -129,7 +134,7 @@ class App(ctk.CTk):
 
     def _reset_nav_buttons(self):
         """Reinicia el estilo de todos los botones de navegación."""
-        buttons = [self.btn_dashboard, self.btn_detonation, self.btn_snapshots, self.btn_config]
+        buttons = [self.btn_dashboard, self.btn_detonation, self.btn_analysis, self.btn_snapshots, self.btn_config]
         for btn in buttons:
             btn.configure(fg_color="transparent", text_color="gray80")
 
@@ -153,6 +158,12 @@ class App(ctk.CTk):
         self._hide_current_frame()
         self._set_active_btn(self.btn_detonation)
         self.current_frame = self.views["detonation"]
+        self.current_frame.pack(fill="both", expand=True)
+
+    def show_analysis(self):
+        self._hide_current_frame()
+        self._set_active_btn(self.btn_analysis)
+        self.current_frame = self.views["analysis"]
         self.current_frame.pack(fill="both", expand=True)
 
     def show_snapshots(self):

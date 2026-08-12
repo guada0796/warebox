@@ -4,7 +4,7 @@ Módulo para automatizar el escaneo de tráfico de red (.pcap) utilizando Surica
 import subprocess
 import json
 from pathlib import Path
-from utils import messages as msg, config
+from utils import config
 
 def analyze_pcap(pcap_path, output_dir):
     """
@@ -19,7 +19,7 @@ def analyze_pcap(pcap_path, output_dir):
         try:
             eve_json_path.unlink()
         except Exception as e:
-            msg.error(f"No se pudo eliminar el archivo eve.json anterior: {e}")
+            raise RuntimeError(f"No se pudo eliminar el archivo eve.json anterior: {e}")
 
     # -k none ignora los errores de checksum (muy común en tráfico capturado en entornos virtuales)
     comando = [
@@ -29,21 +29,15 @@ def analyze_pcap(pcap_path, output_dir):
         "-k", "none" 
     ]
 
-    print(eve_json_path)
-    msg.processing(f"Ejecutando motor IDS (Suricata) sobre {pcap_file.name}...")
-
     try:
         # Usamos capture_output para mantener la consola limpia de logs del motor
         subprocess.run(comando, capture_output=True, text=True, check=True)
-        msg.info("Análisis de Suricata completado")
         
         eve_json = _parse_eve_json(eve_json_path)
-        print(eve_json)  # Para depuración, puedes eliminarlo en producción
         return eve_json
 
     except subprocess.CalledProcessError as e:
-        msg.error(f"Fallo al ejecutar Suricata: {e.stderr}")
-        return None
+        raise RuntimeError(f"Fallo al ejecutar Suricata: {e.stderr}")
 
 def _parse_eve_json(eve_path):
     """
@@ -55,7 +49,6 @@ def _parse_eve_json(eve_path):
     }
 
     if not eve_path.exists():
-        msg.warning("No se encontró el archivo eve.json de Suricata.")
         return resumen
 
     try:
@@ -97,5 +90,4 @@ def _parse_eve_json(eve_path):
         return resumen
 
     except Exception as e:
-        msg.error(f"Error parseando resultados de Suricata: {e}")
-        return None
+        raise RuntimeError(f"Error parseando resultados de Suricata: {e}")
